@@ -184,23 +184,30 @@ curl -X POST https://<preview-worker-host>/api/dev/seed
 
 ## 8. Wire Cloudflare Workers Builds
 
-Connect GitHub so branch pushes auto-deploy the matching Worker.
+## 8. Wire Cloudflare Workers Builds
 
-### Staging build (`preview` branch)
+Single Workers Builds project (e.g. **manut-app**) connected to **`mygogocash/great-manut`**.
 
-1. Cloudflare dashboard → **Workers & Pages** → **great-manut-api-preview**
-2. **Settings** → **Builds** → **Connect to Git**
-3. Repository: **`mygogocash/great-manut`**
-4. **Production branch:** **`preview`**
-5. Build command: `pnpm install --frozen-lockfile && pnpm --filter @great-manut/api build`
-6. Deploy command: `pnpm --filter @great-manut/api deploy:preview`
+### Dashboard settings (Build → Build configuration)
 
-### Production build (`main` branch)
+| Field | Value |
+|---|---|
+| Git repository | `mygogocash/great-manut` |
+| **Production branch** | **`main`** |
+| **Builds for non-production branches** | **Enabled** (deploys `preview` and feature branches to staging Worker) |
+| Root directory | `/` |
+| Build command | `bash scripts/cloudflare-build.sh` |
+| Deploy command | `bash scripts/cloudflare-deploy.sh` |
+| Version command | *(optional)* `cd packages/api && pnpm exec wrangler versions upload` |
 
-1. Worker: **great-manut-api** (production env)
-2. **Production branch:** **`main`**
-3. Same build command
-4. Deploy command: `pnpm --filter @great-manut/api deploy:production`
+The deploy script picks the Worker automatically:
+
+- **`main`** → `wrangler deploy --env production` → `great-manut-api`
+- **`preview`** (and other branches) → `wrangler deploy` → `great-manut-api-preview`
+
+Replace `npx wrangler deploy` at repo root — there is no root `wrangler.toml`; config lives in `packages/api/`.
+
+After saving, trigger a build from **`preview`** (staging smoke) then from **`main`** (production) once D1/KV/R2 IDs in `wrangler.toml` are real (not placeholders).
 
 ---
 
@@ -214,16 +221,12 @@ Local web dev proxies `/api` to `http://127.0.0.1:8787` (see `apps/web/vite.conf
 
 ## Quick reference
 
-| Resource | Preview | Production |
+| Resource | Staging (`preview`) | Production (`main`) |
 |---|---|---|
 | Worker | `great-manut-api-preview` | `great-manut-api` |
 | D1 | `great-manut-preview` | `great-manut-prod` |
 | R2 | `great-manut-uploads-preview` | `great-manut-uploads-prod` |
 | KV binding | `AUTH` | `AUTH` |
-| Git branch | Role | Worker deploy |
-|---|---|---|
-| `preview` | Testing / staging | `deploy:preview` |
-| `main` | Production | `deploy:production` |
 
 | Command | Purpose |
 |---|---|
