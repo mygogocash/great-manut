@@ -184,9 +184,14 @@ curl -X POST https://<preview-worker-host>/api/dev/seed
 
 ## 8. Wire Cloudflare Workers Builds
 
-## 8. Wire Cloudflare Workers Builds
+Create a **separate** Workers Builds project for Great Manut — do **not** reuse **`manut-app`**. That name is already the production **Plane Manut** Worker (`LiveRoomDurableObject`) in the same Cloudflare account. Pointing Great Manut at `manut-app` will fail deploy (DO class mismatch) or overwrite production Manut.
 
-Single Workers Builds project (e.g. **manut-app**) connected to **`mygogocash/great-manut`**.
+Recommended project / Worker names:
+
+| Environment | Worker name | URL (example) |
+|---|---|---|
+| Staging (`preview`) | `great-manut-api-preview` | `https://great-manut-api-preview.bettergogocash.workers.dev` |
+| Production (`main`) | `great-manut-api` | `https://great-manut-api.bettergogocash.workers.dev` |
 
 ### Dashboard settings (Build → Build configuration)
 
@@ -202,12 +207,23 @@ Single Workers Builds project (e.g. **manut-app**) connected to **`mygogocash/gr
 
 The deploy script picks the Worker automatically:
 
-- **`main`** → `wrangler deploy --env production` → `great-manut-api`
-- **`preview`** (and other branches) → `wrangler deploy` → `great-manut-api-preview`
+- **`main`** → top-level `wrangler.toml` env → `great-manut-api`
+- **`preview`** (and other branches) → `wrangler deploy --env staging` → `great-manut-api-preview`
 
-Replace `npx wrangler deploy` — it fails on pnpm monorepos and ignores branch → environment mapping.
+Replace `npx wrangler deploy` — it fails on pnpm monorepos, ignores branch → environment mapping, and (if the Builds project is named `manut-app`) targets the wrong Worker.
 
-After saving, trigger a build from **`preview`** (staging smoke) then from **`main`** (production) once D1/KV/R2 IDs in `wrangler.toml` are real (not placeholders).
+### Resource IDs (GoGoCash account, 2026-06-27)
+
+| Resource | Name | ID |
+|---|---|---|
+| D1 preview | `great-manut-preview` | `2b34f8e8-5793-4de3-b683-a2347de17578` |
+| D1 production | `great-manut-prod` | `7ab2abcb-f876-4a35-996b-4d1a1e8c2fd1` |
+| KV preview (`AUTH`) | `great-manut-auth-preview` | `068e8ef8254a4f0eb39e698e4e7105dc` |
+| KV production (`AUTH`) | `great-manut-auth-prod` | `06c31f95835a4284b9a85a9e9b3003ec` |
+| R2 preview | `great-manut-uploads-preview` | *(bucket name only)* |
+| R2 production | `great-manut-uploads-prod` | *(bucket name only)* |
+
+Remote migrations applied: `0001_core`, `0002_issues`, `0003_sync` on both D1 databases.
 
 ---
 

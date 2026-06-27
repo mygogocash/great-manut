@@ -16,12 +16,12 @@ ACCESS_TOKEN_TTL_SECONDS = "3600"
 [[d1_databases]]
 binding = "DB"
 database_name = "great-manut-preview"
-database_id = "00000000-0000-0000-0000-000000000001"
+database_id = "2b34f8e8-5793-4de3-b683-a2347de17578"
 migrations_dir = "migrations"
 
 [[kv_namespaces]]
 binding = "AUTH"
-id = "00000000000000000000000000000001"
+id = "068e8ef8254a4f0eb39e698e4e7105dc"
 
 [[r2_buckets]]
 binding = "UPLOADS"
@@ -47,12 +47,12 @@ ACCESS_TOKEN_TTL_SECONDS = "3600"
 [[env.production.d1_databases]]
 binding = "DB"
 database_name = "great-manut-prod"
-database_id = "00000000-0000-0000-0000-000000000002"
+database_id = "7ab2abcb-f876-4a35-996b-4d1a1e8c2fd1"
 migrations_dir = "migrations"
 
 [[env.production.kv_namespaces]]
 binding = "AUTH"
-id = "00000000000000000000000000000002"
+id = "06c31f95835a4284b9a85a9e9b3003ec"
 
 [[env.production.r2_buckets]]
 binding = "UPLOADS"
