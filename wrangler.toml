@@ -1,0 +1,69 @@
+# Cloudflare Workers Builds runs deploy from the monorepo root.
+# Keep bindings in sync with packages/api/wrangler.toml (paths differ by prefix).
+name = "great-manut-api-preview"
+main = "packages/api/src/index.ts"
+compatibility_date = "2026-06-21"
+compatibility_flags = ["nodejs_compat"]
+account_id = "187ab61ed9dbc6e616cb23e6b95aa8f1"
+
+[observability]
+enabled = true
+
+[vars]
+APP_ENV = "preview"
+APP_ORIGIN = "http://localhost:5173"
+JWT_ISSUER = "great-manut"
+ACCESS_TOKEN_TTL_SECONDS = "3600"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "great-manut-preview"
+database_id = "00000000-0000-0000-0000-000000000001"
+migrations_dir = "packages/api/migrations"
+
+[[kv_namespaces]]
+binding = "AUTH"
+id = "00000000000000000000000000000001"
+
+[[r2_buckets]]
+binding = "UPLOADS"
+bucket_name = "great-manut-uploads-preview"
+
+[[durable_objects.bindings]]
+name = "SYNC_ROOMS"
+class_name = "SyncRoomDurableObject"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["SyncRoomDurableObject"]
+
+[env.production]
+name = "great-manut-api"
+
+[env.production.vars]
+APP_ENV = "production"
+APP_ORIGIN = "https://app.greatmanut.xyz"
+JWT_ISSUER = "great-manut"
+ACCESS_TOKEN_TTL_SECONDS = "3600"
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "great-manut-prod"
+database_id = "00000000-0000-0000-0000-000000000002"
+migrations_dir = "packages/api/migrations"
+
+[[env.production.kv_namespaces]]
+binding = "AUTH"
+id = "00000000000000000000000000000002"
+
+[[env.production.r2_buckets]]
+binding = "UPLOADS"
+bucket_name = "great-manut-uploads-prod"
+
+[[env.production.durable_objects.bindings]]
+name = "SYNC_ROOMS"
+class_name = "SyncRoomDurableObject"
+
+[[env.production.migrations]]
+tag = "v1"
+new_sqlite_classes = ["SyncRoomDurableObject"]

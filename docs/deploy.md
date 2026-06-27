@@ -197,7 +197,7 @@ Single Workers Builds project (e.g. **manut-app**) connected to **`mygogocash/gr
 | **Builds for non-production branches** | **Enabled** (deploys `preview` and feature branches to staging Worker) |
 | Root directory | `/` |
 | Build command | `bash scripts/cloudflare-build.sh` |
-| Deploy command | `bash scripts/cloudflare-deploy.sh` |
+| **Deploy command** | **`pnpm run deploy`** |
 | Version command | *(optional)* `cd packages/api && pnpm exec wrangler versions upload` |
 
 The deploy script picks the Worker automatically:
