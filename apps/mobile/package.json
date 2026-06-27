@@ -1,0 +1,10 @@
+{
+  "name": "@great-manut/mobile",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Future Expo shell — wire @great-manut/core StorageAdapter to OP-SQLite in Phase 7+",
+  "scripts": {
+    "check": "node -e \"process.exit(0)\"",
+    "test": "node -e \"process.exit(0)\""
+  }
+}
