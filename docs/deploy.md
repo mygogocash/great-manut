@@ -196,8 +196,8 @@ Single Workers Builds project (e.g. **manut-app**) connected to **`mygogocash/gr
 | **Production branch** | **`main`** |
 | **Builds for non-production branches** | **Enabled** (deploys `preview` and feature branches to staging Worker) |
 | Root directory | `/` |
-| Build command | `bash scripts/cloudflare-build.sh` |
-| **Deploy command** | **`pnpm run deploy`** |
+| **Build command** | `pnpm run build` |
+| **Deploy command** | **`pnpm run deploy`** (or `bash deploy.sh`) — **not** `npx wrangler deploy` |
 | Version command | *(optional)* `cd packages/api && pnpm exec wrangler versions upload` |
 
 The deploy script picks the Worker automatically:
@@ -205,7 +205,7 @@ The deploy script picks the Worker automatically:
 - **`main`** → `wrangler deploy --env production` → `great-manut-api`
 - **`preview`** (and other branches) → `wrangler deploy` → `great-manut-api-preview`
 
-Replace `npx wrangler deploy` at repo root — there is no root `wrangler.toml`; config lives in `packages/api/`.
+Replace `npx wrangler deploy` — it fails on pnpm monorepos and ignores branch → environment mapping.
 
 After saving, trigger a build from **`preview`** (staging smoke) then from **`main`** (production) once D1/KV/R2 IDs in `wrangler.toml` are real (not placeholders).
 

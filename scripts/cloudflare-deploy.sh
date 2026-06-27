@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Branch-aware deploy for Cloudflare Workers Builds (WORKERS_CI_BRANCH is injected by CF).
-# preview → great-manut-api-preview | main → great-manut-api (--env production)
+# Cloudflare Workers Builds — use: pnpm run deploy  OR  bash deploy.sh
+# Do NOT use: npx wrangler deploy (breaks pnpm monorepo detection without this script).
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
@@ -12,8 +12,8 @@ BRANCH="${BRANCH#refs/heads/}"
 
 if [ "$BRANCH" = "main" ]; then
   echo "Deploying production Worker (WORKERS_CI_BRANCH=main)"
-  pnpm exec wrangler deploy --env production
+  pnpm exec wrangler deploy
 else
   echo "Deploying staging Worker (WORKERS_CI_BRANCH=${BRANCH})"
-  pnpm exec wrangler deploy
+  pnpm exec wrangler deploy --env staging
 fi
