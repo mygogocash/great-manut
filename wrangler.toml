@@ -5,7 +5,7 @@
 #   main    → top-level env (production Worker)
 #   preview → --env staging
 
-name = "great-manut-api"
+name = "great-manut-api-preview"
 main = "packages/api/src/index.ts"
 compatibility_date = "2026-06-21"
 compatibility_flags = ["nodejs_compat"]
