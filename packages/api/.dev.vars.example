@@ -1,8 +1,0 @@
-# Copy to packages/api/.dev.vars (gitignored). Used by `pnpm --filter @great-manut/api dev`.
-#
-# Non-secret vars are in wrangler.toml [vars]. Only secrets and local overrides belong here.
-
-JWT_SECRET=great-manut-dev-secret-change-me
-APP_ORIGIN=http://localhost:5173
-RESEND_API_KEY=
-RESEND_FROM_EMAIL=Great Manut <noreply@example.com>
