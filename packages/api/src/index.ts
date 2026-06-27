@@ -17,6 +17,9 @@ app.use("*", async (c, next) => {
   }
   await next();
   const response = c.res;
+  if (response.status === 101) {
+    return response;
+  }
   const headers = new Headers(response.headers);
   for (const [key, value] of Object.entries(corsHeaders(c.env.APP_ORIGIN))) {
     headers.set(key, value);

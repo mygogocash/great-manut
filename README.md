@@ -2,7 +2,7 @@
 
 Cloudflare-native, mobile-ready issue tracking built as a greenfield sibling to legacy Manut (`mygogocash-plane`).
 
-- **Repo:** `gogocash/great-manut`
+- **Repo:** [`mygogocash/great-manut`](https://github.com/mygogocash/great-manut)
 - **Stack:** Turborepo, Hono Worker, D1, Durable Objects, TinyBase local-first core, React Router v7 web shell
 - **Domain:** Organization → Team → Issue (`ENG-123`)
 
@@ -51,21 +51,18 @@ pnpm check
 
 ## Deploy
 
-Cloudflare resources use the GoGoCash account with separate D1/R2 bindings from legacy Manut:
+See **[`docs/deploy.md`](docs/deploy.md)** for the full first-time setup (GitHub repo, D1/KV/R2, migrations, Workers Builds).
 
-- Preview worker: `great-manut-api-preview`
-- Production worker: `great-manut-api`
-- D1: `great-manut-preview`, `great-manut-prod`
+Quick deploy after resources exist:
 
 ```bash
 pnpm --filter @great-manut/api db:migrate:preview
 pnpm --filter @great-manut/api deploy
 ```
 
-Wire Cloudflare Workers Builds to `gogocash/great-manut` in the Cloudflare dashboard.
-
 ## Docs
 
+- [`docs/deploy.md`](docs/deploy.md)
 - [`docs/architecture.md`](docs/architecture.md)
 - [`docs/sync-protocol.md`](docs/sync-protocol.md)
 - [`docs/mobile-readiness.md`](docs/mobile-readiness.md)

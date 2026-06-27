@@ -1,8 +1,8 @@
 import type { Store } from "tinybase";
 import type { HttpAdapter, WebSocketAdapter } from "../adapters/index.js";
 import type { SyncDelta } from "../schemas/index.js";
-import { listOutboxEntries, removeOutboxEntry } from "../local/index.js";
-import { syncDeltaSchema } from "../schemas/index.js";
+import { listOutboxEntries, removeOutboxEntry, upsertIssue, TABLE_ISSUES } from "../local/index.js";
+import { issueSchema, syncDeltaSchema } from "../schemas/index.js";
 
 export type SyncManagerOptions = {
   store: Store;
@@ -53,6 +53,9 @@ export class SyncManager {
         if (parsed.type === "pong") {
           return;
         }
+        if (parsed.type === "delta") {
+          this.applyDelta(parsed);
+        }
         this.options.onDelta?.(parsed);
         if (parsed.type === "ack" && parsed.idempotency_key) {
           this.ackOutbox(parsed.idempotency_key);
@@ -84,6 +87,34 @@ export class SyncManager {
         void this.connect();
       }
     }, delayMs);
+  }
+
+  private applyDelta(delta: SyncDelta): void {
+    if (delta.type !== "delta" || !delta.entity) {
+      return;
+    }
+
+    const data = (delta.data ?? {}) as Record<string, unknown>;
+
+    switch (delta.entity) {
+      case "issue.create":
+      case "issue.update": {
+        const parsed = issueSchema.safeParse(data.issue);
+        if (parsed.success) {
+          upsertIssue(this.options.store, parsed.data);
+        }
+        break;
+      }
+      case "issue.delete": {
+        const issueId = typeof data.issue_id === "string" ? data.issue_id : undefined;
+        if (issueId && this.options.store.hasRow(TABLE_ISSUES, issueId)) {
+          this.options.store.setCell(TABLE_ISSUES, issueId, "deleted_at", new Date().toISOString());
+        }
+        break;
+      }
+      default:
+        break;
+    }
   }
 
   private ackOutbox(idempotencyKey: string): void {

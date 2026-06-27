@@ -43,6 +43,11 @@ orgRoutes.post("/", async (c) => {
     return error("INVALID_REQUEST", "Name and slug are required");
   }
 
+  const idempotencyKey = getIdempotencyKey(c.req.raw);
+  if (idempotencyKey && (await isIdempotencyApplied(c.env, idempotencyKey))) {
+    return json({ deduped: true });
+  }
+
   const orgId = newId();
   const timestamp = nowIso();
 
@@ -54,6 +59,10 @@ orgRoutes.post("/", async (c) => {
       "INSERT INTO organization_members (id, org_id, user_id, role, created_at) VALUES (?, ?, ?, ?, ?)"
     ).bind(newId(), orgId, user.id, "owner", timestamp),
   ]);
+
+  if (idempotencyKey) {
+    await markIdempotencyApplied(c.env, idempotencyKey, "org", orgId);
+  }
 
   return json({ id: orgId, slug, name, created_at: timestamp, updated_at: timestamp }, 201);
 });
@@ -87,6 +96,11 @@ orgRoutes.post("/:orgSlug/teams", async (c) => {
     return error("INVALID_REQUEST", "Team name and 2-6 char key are required");
   }
 
+  const idempotencyKey = getIdempotencyKey(c.req.raw);
+  if (idempotencyKey && (await isIdempotencyApplied(c.env, idempotencyKey))) {
+    return json({ deduped: true });
+  }
+
   const teamId = newId();
   const timestamp = nowIso();
 
@@ -100,6 +114,10 @@ orgRoutes.post("/:orgSlug/teams", async (c) => {
   ]);
 
   await seedDefaultWorkflowStates(c.env, teamId);
+
+  if (idempotencyKey) {
+    await markIdempotencyApplied(c.env, idempotencyKey, "team", teamId);
+  }
 
   return json({ id: teamId, org_id: org.id, key, name, created_at: timestamp, updated_at: timestamp }, 201);
 });
@@ -340,6 +358,11 @@ orgRoutes.post("/:orgSlug/teams/:teamKey/labels", async (c) => {
     return error("NAME_REQUIRED", "Label name is required");
   }
 
+  const idempotencyKey = getIdempotencyKey(c.req.raw);
+  if (idempotencyKey && (await isIdempotencyApplied(c.env, idempotencyKey))) {
+    return json({ deduped: true });
+  }
+
   const id = newId();
   const timestamp = nowIso();
   await c.env.DB.prepare(
@@ -347,6 +370,10 @@ orgRoutes.post("/:orgSlug/teams/:teamKey/labels", async (c) => {
   )
     .bind(id, team.id, name, body.color ?? "#5e6ad2", timestamp, timestamp)
     .run();
+
+  if (idempotencyKey) {
+    await markIdempotencyApplied(c.env, idempotencyKey, "label", id);
+  }
 
   return json({ id, team_id: team.id, name, color: body.color ?? "#5e6ad2", created_at: timestamp, updated_at: timestamp }, 201);
 });
@@ -402,6 +429,11 @@ orgRoutes.post("/:orgSlug/teams/:teamKey/issues/:issueNumber/comments", async (c
     return error("BODY_REQUIRED", "Comment body is required");
   }
 
+  const idempotencyKey = getIdempotencyKey(c.req.raw);
+  if (idempotencyKey && (await isIdempotencyApplied(c.env, idempotencyKey))) {
+    return json({ deduped: true });
+  }
+
   const id = newId();
   const timestamp = nowIso();
   await c.env.DB.prepare(
@@ -409,6 +441,10 @@ orgRoutes.post("/:orgSlug/teams/:teamKey/issues/:issueNumber/comments", async (c
   )
     .bind(id, issue.id, text, user.id, timestamp, timestamp)
     .run();
+
+  if (idempotencyKey) {
+    await markIdempotencyApplied(c.env, idempotencyKey, "comment", id);
+  }
 
   return json({ id, issue_id: issue.id, body: text, author_id: user.id, created_at: timestamp, updated_at: timestamp }, 201);
 });
