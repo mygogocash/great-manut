@@ -13,6 +13,8 @@
     "dev": "wrangler dev",
     "test": "vitest run",
     "deploy": "wrangler deploy",
+    "deploy:preview": "wrangler deploy",
+    "deploy:production": "wrangler deploy --env production",
     "db:migrate:local": "wrangler d1 migrations apply great-manut-preview --local",
     "db:migrate:preview": "wrangler d1 migrations apply great-manut-preview --remote",
     "db:migrate:production": "wrangler d1 migrations apply great-manut-prod --env production --remote"

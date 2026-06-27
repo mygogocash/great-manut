@@ -4,58 +4,34 @@ Step-by-step operator runbook for first-time Cloudflare + GitHub setup of **Grea
 
 **Account:** Cloudflare GoGoCash (`187ab61ed9dbc6e616cb23e6b95aa8f1`)  
 **GitHub org:** `mygogocash`  
-**Target repo:** `mygogocash/great-manut`  
-**Default branch for CI:** `preview`
+**Target repo:** `mygogocash/great-manut`
+
+## Branching model
+
+| Branch | Purpose | Deploy target |
+|---|---|---|
+| **`preview`** | Testing and staging | `great-manut-api-preview` + `great-manut-preview` D1 |
+| **`main`** | Production | `great-manut-api` + `great-manut-prod` D1 |
+
+- Feature work lands on **`preview`** first.
+- Promote to **`main`** only after staging smoke passes.
+- CI runs on both branches (`.github/workflows/ci.yml`).
+- Workers Builds: connect **`preview`** branch → preview Worker; **`main`** branch → production Worker (`--env production`).
 
 ---
 
-## 1. Create the GitHub repository
+## 1. GitHub repository
 
-The repo does not exist yet. An org owner or member with **repo creation** permission must create it.
+Repo: https://github.com/mygogocash/great-manut
 
-### Option A — GitHub CLI (recommended)
-
-From the local clone (on branch `preview`):
+Both branches should exist:
 
 ```bash
-cd /path/to/great-manut
-gh repo create mygogocash/great-manut \
-  --private \
-  --description "Cloudflare-native issue tracking (Great Manut greenfield)" \
-  --source=. \
-  --remote=origin \
-  --push
+git push -u origin preview   # staging
+git push -u origin main      # production
 ```
 
-If the repo already exists but has no remote:
-
-```bash
-git remote add origin git@github.com:mygogocash/great-manut.git
-git push -u origin preview
-```
-
-### Option B — GitHub web UI
-
-1. Go to https://github.com/organizations/mygogocash/repositories/new
-2. Name: `great-manut`, visibility: Private
-3. Do **not** initialize with README (this clone already has history)
-4. Add remote and push:
-
-```bash
-git remote add origin git@github.com:mygogocash/great-manut.git
-git push -u origin preview
-```
-
-### Verify
-
-```bash
-gh repo view mygogocash/great-manut
-```
-
-Expected: repository metadata (URL, default branch, visibility).  
-If you see `Could not resolve to a Repository`, the repo is not created or your token lacks org access.
-
----
+Optional: set **`preview`** as the default branch in GitHub Settings (keeps PRs targeting staging by default).
 
 ## 2. Push the `preview` branch
 
@@ -172,13 +148,23 @@ pnpm --filter @great-manut/api db:migrate:local
 
 ---
 
-## 7. Deploy preview Worker
+## 7. Deploy Workers
+
+**Staging** (from `preview` branch):
 
 ```bash
-pnpm --filter @great-manut/api deploy
+pnpm --filter @great-manut/api deploy:preview
 ```
 
-This deploys `great-manut-api-preview` (default env in `wrangler.toml`).
+Deploys `great-manut-api-preview` (default env in `wrangler.toml`).
+
+**Production** (from `main` branch):
+
+```bash
+pnpm --filter @great-manut/api deploy:production
+```
+
+Deploys `great-manut-api` (`[env.production]` in `wrangler.toml`).
 
 Smoke check:
 
@@ -198,19 +184,23 @@ curl -X POST https://<preview-worker-host>/api/dev/seed
 
 ## 8. Wire Cloudflare Workers Builds
 
-Connect GitHub so pushes to `preview` auto-deploy the API Worker.
+Connect GitHub so branch pushes auto-deploy the matching Worker.
+
+### Staging build (`preview` branch)
 
 1. Cloudflare dashboard → **Workers & Pages** → **great-manut-api-preview**
 2. **Settings** → **Builds** → **Connect to Git**
-3. Select GitHub account → repository **`mygogocash/great-manut`**
-4. Production branch: **`preview`** (matches CI default)
-5. Build settings:
-   - **Root directory:** `/` (monorepo root)
-   - **Build command:** `pnpm install --frozen-lockfile && pnpm --filter @great-manut/api build`
-   - **Deploy command:** `pnpm --filter @great-manut/api exec wrangler deploy`
-6. Save and trigger a test build from the latest `preview` commit
+3. Repository: **`mygogocash/great-manut`**
+4. **Production branch:** **`preview`**
+5. Build command: `pnpm install --frozen-lockfile && pnpm --filter @great-manut/api build`
+6. Deploy command: `pnpm --filter @great-manut/api deploy:preview`
 
-Repeat for production worker **`great-manut-api`** with branch **`main`** and `--env production` on deploy when production cutover is ready.
+### Production build (`main` branch)
+
+1. Worker: **great-manut-api** (production env)
+2. **Production branch:** **`main`**
+3. Same build command
+4. Deploy command: `pnpm --filter @great-manut/api deploy:production`
 
 ---
 
@@ -230,12 +220,17 @@ Local web dev proxies `/api` to `http://127.0.0.1:8787` (see `apps/web/vite.conf
 | D1 | `great-manut-preview` | `great-manut-prod` |
 | R2 | `great-manut-uploads-preview` | `great-manut-uploads-prod` |
 | KV binding | `AUTH` | `AUTH` |
-| Git branch (CI/deploy) | `preview` | `main` |
+| Git branch | Role | Worker deploy |
+|---|---|---|
+| `preview` | Testing / staging | `deploy:preview` |
+| `main` | Production | `deploy:production` |
 
 | Command | Purpose |
 |---|---|
 | `pnpm check` | Typecheck all packages |
 | `pnpm test` | Unit tests |
 | `pnpm build` | Turbo build (includes web) |
-| `pnpm --filter @great-manut/api deploy` | Deploy preview Worker |
-| `pnpm --filter @great-manut/api db:migrate:preview` | Remote D1 migrations (preview) |
+| `pnpm --filter @great-manut/api deploy:preview` | Deploy staging Worker |
+| `pnpm --filter @great-manut/api deploy:production` | Deploy production Worker |
+| `pnpm --filter @great-manut/api db:migrate:preview` | Remote D1 migrations (staging) |
+| `pnpm --filter @great-manut/api db:migrate:production` | Remote D1 migrations (production) |

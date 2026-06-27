@@ -3,6 +3,7 @@
 Cloudflare-native, mobile-ready issue tracking built as a greenfield sibling to legacy Manut (`mygogocash-plane`).
 
 - **Repo:** [`mygogocash/great-manut`](https://github.com/mygogocash/great-manut)
+- **Branches:** `preview` → testing/staging · `main` → production
 - **Stack:** Turborepo, Hono Worker, D1, Durable Objects, TinyBase local-first core, React Router v7 web shell
 - **Domain:** Organization → Team → Issue (`ENG-123`)
 
@@ -49,15 +50,31 @@ pnpm test
 pnpm check
 ```
 
+## Branching & environments
+
+| Git branch | Role | Cloudflare Worker | D1 |
+|---|---|---|---|
+| `preview` | Testing / staging | `great-manut-api-preview` | `great-manut-preview` |
+| `main` | Production | `great-manut-api` | `great-manut-prod` |
+
+Day-to-day work merges into **`preview`**. When staging is validated, promote to **`main`** (PR or merge). CI runs on both branches; deploy commands differ by environment (see below).
+
 ## Deploy
 
-See **[`docs/deploy.md`](docs/deploy.md)** for the full first-time setup (GitHub repo, D1/KV/R2, migrations, Workers Builds).
+See **[`docs/deploy.md`](docs/deploy.md)** for first-time Cloudflare setup.
 
-Quick deploy after resources exist:
+**Staging (`preview` branch):**
 
 ```bash
 pnpm --filter @great-manut/api db:migrate:preview
-pnpm --filter @great-manut/api deploy
+pnpm --filter @great-manut/api deploy:preview
+```
+
+**Production (`main` branch):**
+
+```bash
+pnpm --filter @great-manut/api db:migrate:production
+pnpm --filter @great-manut/api deploy:production
 ```
 
 ## Docs
