@@ -36,14 +36,3 @@ jobs:
             exit 0
           fi
           npx convex deploy --yes
-
-      - name: Set Convex auth site URL
-        env:
-          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
-          CONVEX_DEPLOYMENT: dev:sincere-oriole-287
-        run: |
-          if [ -z "$CONVEX_DEPLOY_KEY" ]; then
-            echo "::warning::CONVEX_DEPLOY_KEY is not set — skipping env sync."
-            exit 0
-          fi
-          npx convex env set CONVEX_SITE_URL https://sincere-oriole-287.convex.site

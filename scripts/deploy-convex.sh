@@ -64,10 +64,6 @@ assert_deployment_access
 echo "Deploying Convex functions to sincere-oriole-287…"
 CONVEX_DEPLOYMENT="${CONVEX_DEPLOYMENT:-$DEPLOYMENT}" npx convex deploy --yes
 
-echo "Ensuring CONVEX_SITE_URL is set for auth JWT validation…"
-npx convex env set CONVEX_SITE_URL "$SITE_URL" --yes 2>/dev/null || \
-  echo "warn: could not set CONVEX_SITE_URL (run manually if auth fails after deploy)"
-
 echo "Done. Verify auth is deployed (signIn is an Action, not missing):"
 echo "  curl -s -X POST https://sincere-oriole-287.convex.cloud/api/action \\"
 echo "    -H 'Content-Type: application/json' \\"
