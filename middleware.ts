@@ -22,6 +22,23 @@ const isPublicRoute = createRouteMatcher([
   "/ingest(.*)",
 ]);
 
+/** Skip JWT work on routes that never need an auth decision. */
+function needsAuthCheck(request: NextRequest): boolean {
+  const host = request.nextUrl.hostname;
+  const { pathname } = request.nextUrl;
+
+  if (host === "www.manut.xyz" || host === "www.app.manut.xyz") {
+    return false;
+  }
+  if ((MARKETING_HOSTS as readonly string[]).includes(host)) {
+    return false;
+  }
+  if (isPublicRoute(request) && !(host === APP_HOST && pathname === "/")) {
+    return false;
+  }
+  return true;
+}
+
 function hostBasedRedirect(
   request: NextRequest,
   isAuthenticated: boolean,
@@ -69,13 +86,17 @@ function hostBasedRedirect(
 }
 
 export default convexAuthNextjsMiddleware(async (request, { convexAuth }) => {
-  const isAuthenticated = await convexAuth.isAuthenticated();
+  const checkAuth = needsAuthCheck(request);
+  const isAuthenticated = checkAuth
+    ? await convexAuth.isAuthenticated()
+    : false;
+
   const redirect = hostBasedRedirect(request, isAuthenticated);
   if (redirect) {
     return redirect;
   }
 
-  if (!isPublicRoute(request) && !isAuthenticated) {
+  if (checkAuth && !isPublicRoute(request) && !isAuthenticated) {
     return nextjsMiddlewareRedirect(request, "/sign-in");
   }
 });

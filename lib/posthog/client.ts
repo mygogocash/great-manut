@@ -1,27 +1,36 @@
-import posthog from "posthog-js";
+import { ensurePostHogInit, isPostHogConfigured } from "@/lib/posthog/init";
 
 export function isPostHogEnabled(): boolean {
-  return Boolean(
-    typeof window !== "undefined" &&
-      process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN,
-  );
+  return isPostHogConfigured();
+}
+
+function withPostHog(
+  run: (ph: NonNullable<Awaited<ReturnType<typeof ensurePostHogInit>>>) => void,
+): void {
+  if (!isPostHogConfigured()) {
+    return;
+  }
+  void ensurePostHogInit().then((ph) => {
+    if (!ph) {
+      return;
+    }
+    run(ph);
+  });
 }
 
 export function captureEvent(
   event: string,
   properties?: Record<string, string | number | boolean | null | undefined>,
 ): void {
-  if (!isPostHogEnabled()) {
-    return;
-  }
-  posthog.capture(event, properties);
+  withPostHog((ph) => {
+    ph.capture(event, properties);
+  });
 }
 
 export function capturePageview(url: string): void {
-  if (!isPostHogEnabled()) {
-    return;
-  }
-  posthog.capture("$pageview", { $current_url: url });
+  withPostHog((ph) => {
+    ph.capture("$pageview", { $current_url: url });
+  });
 }
 
 export function identifyUser(user: {
@@ -29,12 +38,11 @@ export function identifyUser(user: {
   email?: string;
   name?: string;
 }): void {
-  if (!isPostHogEnabled()) {
-    return;
-  }
-  posthog.identify(user.id, {
-    email: user.email,
-    name: user.name,
+  withPostHog((ph) => {
+    ph.identify(user.id, {
+      email: user.email,
+      name: user.name,
+    });
   });
 }
 
@@ -44,26 +52,23 @@ export function setOrgGroup(org: {
   slug: string;
   plan: string;
 }): void {
-  if (!isPostHogEnabled()) {
-    return;
-  }
-  posthog.group("organization", org.orgId, {
-    name: org.name,
-    slug: org.slug,
-    plan: org.plan,
+  withPostHog((ph) => {
+    ph.group("organization", org.orgId, {
+      name: org.name,
+      slug: org.slug,
+      plan: org.plan,
+    });
   });
 }
 
 export function resetAnalytics(): void {
-  if (!isPostHogEnabled()) {
-    return;
-  }
-  posthog.reset();
+  withPostHog((ph) => {
+    ph.reset();
+  });
 }
 
 export function captureException(error: unknown): void {
-  if (!isPostHogEnabled()) {
-    return;
-  }
-  posthog.captureException(error);
+  withPostHog((ph) => {
+    ph.captureException(error);
+  });
 }

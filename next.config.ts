@@ -4,6 +4,9 @@ import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
 const nextConfig: NextConfig = {
   reactCompiler: true,
   skipTrailingSlashRedirect: true,
+  experimental: {
+    optimizePackageImports: ["lucide-react", "posthog-js"],
+  },
   async rewrites() {
     const host =
       process.env.NEXT_PUBLIC_POSTHOG_HOST ?? "https://us.i.posthog.com";
