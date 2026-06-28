@@ -72,3 +72,55 @@ export async function assertUnderSeatLimit(
 export function hasAiAccess(org: Doc<"organizations">): boolean {
   return isPaidPlan(org);
 }
+
+/** Pro+ — create doc spaces (read is always allowed). */
+export function hasDocsWrite(org: Doc<"organizations">): boolean {
+  return isPaidPlan(org);
+}
+
+/** Pro+ — product discovery (ideas board). */
+export function hasDiscovery(org: Doc<"organizations">): boolean {
+  return isPaidPlan(org);
+}
+
+/** Enterprise — agent queues and customer portal. */
+export function hasServiceDesk(org: Doc<"organizations">): boolean {
+  return org.plan === "enterprise";
+}
+
+/** Enterprise — automation rules engine. */
+export function hasAutomations(org: Doc<"organizations">): boolean {
+  return org.plan === "enterprise";
+}
+
+export function assertHasDocsWrite(org: Doc<"organizations">): void {
+  if (!hasDocsWrite(org)) {
+    throw new Error(
+      "Creating doc spaces requires a Pro or Enterprise plan. Upgrade to Pro to create wiki spaces."
+    );
+  }
+}
+
+export function assertHasDiscovery(org: Doc<"organizations">): void {
+  if (!hasDiscovery(org)) {
+    throw new Error(
+      "Product Discovery requires a Pro or Enterprise plan. Upgrade to Pro to capture and prioritize ideas."
+    );
+  }
+}
+
+export function assertHasServiceDesk(org: Doc<"organizations">): void {
+  if (!hasServiceDesk(org)) {
+    throw new Error(
+      "Service desk requires an Enterprise plan. Upgrade to Enterprise for customer portals and agent queues."
+    );
+  }
+}
+
+export function assertHasAutomations(org: Doc<"organizations">): void {
+  if (!hasAutomations(org)) {
+    throw new Error(
+      "Automations require an Enterprise plan. Upgrade to Enterprise to automate issue and request workflows."
+    );
+  }
+}

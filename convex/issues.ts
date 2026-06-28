@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { Doc, Id } from "./_generated/dataModel";
 import { QueryCtx } from "./_generated/server";
 import { logActivity } from "./lib/activity";
+import { runAutomations } from "./lib/automationEngine";
 import { orgMutation, orgQuery } from "./lib/customFunctions";
 import { assertCanCreateIssue } from "./lib/limits";
 import { issuePriorityValidator, issueStatusValidator } from "./schema";
@@ -21,6 +22,7 @@ export const issueShape = {
   projectId: v.optional(v.id("projects")),
   cycleId: v.optional(v.id("cycles")),
   parentIssueId: v.optional(v.id("issues")),
+  epicId: v.optional(v.id("epics")),
   estimate: v.optional(v.number()),
   dueDate: v.optional(v.number()),
   sortOrder: v.number(),
@@ -145,6 +147,13 @@ export const create = orgMutation({
       type: "created",
     });
 
+    await runAutomations(ctx, {
+      type: "issue.created",
+      orgId: ctx.org._id,
+      issueId,
+      actorId: ctx.user._id,
+    });
+
     return issueId;
   },
 });
@@ -159,6 +168,7 @@ export const update = orgMutation({
     assigneeId: v.optional(v.union(v.id("users"), v.null())),
     projectId: v.optional(v.union(v.id("projects"), v.null())),
     cycleId: v.optional(v.union(v.id("cycles"), v.null())),
+    epicId: v.optional(v.union(v.id("epics"), v.null())),
     estimate: v.optional(v.union(v.number(), v.null())),
     dueDate: v.optional(v.union(v.number(), v.null())),
     sortOrder: v.optional(v.number()),
@@ -204,6 +214,18 @@ export const update = orgMutation({
     if (args.cycleId !== undefined) {
       updates.cycleId = args.cycleId ?? undefined;
     }
+    if (args.epicId !== undefined) {
+      if (args.epicId) {
+        const epic = await ctx.db.get(args.epicId);
+        if (!epic || epic.orgId !== ctx.org._id) {
+          throw new Error("Epic not found");
+        }
+        if (issue.projectId && epic.projectId !== issue.projectId) {
+          throw new Error("Epic must belong to the same project as the issue");
+        }
+      }
+      updates.epicId = args.epicId ?? undefined;
+    }
     if (args.estimate !== undefined) {
       updates.estimate = args.estimate ?? undefined;
     }
@@ -227,6 +249,17 @@ export const update = orgMutation({
         newValue: change.newValue,
       });
     }
+
+    if (args.status !== undefined && args.status !== issue.status) {
+      await runAutomations(ctx, {
+        type: "issue.status_changed",
+        orgId: ctx.org._id,
+        issueId: issue._id,
+        actorId: ctx.user._id,
+        newStatus: args.status,
+      });
+    }
+
     return null;
   },
 });

@@ -5,8 +5,11 @@ import { Id } from "@/convex/_generated/dataModel";
 import { AiAgentPage } from "@/components/ai/ai-agent-page";
 import { parseWorkspaceRoute } from "@/lib/workspace-routes";
 import { CyclesIndexView } from "./views/cycles-index";
+import { DiscoveryIndexView } from "./views/discovery-index";
 import { ProjectsIndexView } from "./views/projects-index";
 import { SearchIndexView } from "./views/search-index";
+import { ServiceIndexView } from "./views/service-index";
+import { ServiceRequestView } from "./views/service-request";
 import { TeamBoardView } from "./views/team-board";
 import { TeamIssuesView } from "./views/team-issues";
 import { WorkspaceHomeView } from "./views/workspace-home";
@@ -35,6 +38,16 @@ export function WorkspaceRouteView() {
       return <AiAgentPage />;
     case "search":
       return <SearchIndexView />;
+    case "discovery":
+      return <DiscoveryIndexView />;
+    case "service":
+      return <ServiceIndexView />;
+    case "service-request":
+      return (
+        <ServiceRequestView
+          requestId={route.requestId as Id<"serviceRequests">}
+        />
+      );
     case "docs":
       return <DocsIndexView />;
     case "docs-space":

@@ -20,6 +20,7 @@ const isPublicRoute = createRouteMatcher([
   "/sign-in(.*)",
   "/sign-up(.*)",
   "/ingest(.*)",
+  "/portal(.*)",
 ]);
 
 /** Skip JWT work on routes that never need an auth decision. */

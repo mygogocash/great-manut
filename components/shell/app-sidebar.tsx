@@ -7,6 +7,8 @@ import {
   Box,
   BookOpen,
   ChevronDown,
+  Headphones,
+  Lightbulb,
   Plus,
   RefreshCcw,
   Search,
@@ -105,6 +107,12 @@ export function AppSidebar() {
           </NavLink>
           <NavLink href={`${base}/ai`} icon={<Bot className="size-4" />}>
             AI Agent
+          </NavLink>
+          <NavLink href={`${base}/discovery`} icon={<Lightbulb className="size-4" />}>
+            Discovery
+          </NavLink>
+          <NavLink href={`${base}/service`} icon={<Headphones className="size-4" />}>
+            Service
           </NavLink>
         </nav>
 

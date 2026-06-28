@@ -28,6 +28,7 @@ import { AttachmentsPanel } from "@/components/issue-detail/attachments-panel";
 import { PlanLimitListener } from "@/components/billing/upgrade-prompt";
 import { AiTriagePanel } from "@/components/ai/triage-panel";
 import { LinkedDocsPanel } from "@/components/docs/linked-docs-panel";
+import { IssueEpicPanel } from "@/components/roadmaps/issue-epic-panel";
 
 export const issueDetailMainSlots: ComponentType<IssueDetailSlotProps>[] = [
   // ...CommentsPanel,
@@ -45,4 +46,5 @@ export const issueDetailSidebarSlots: ComponentType<IssueDetailSlotProps>[] = [
   AttachmentsPanel,
   IssueProjectCyclePanel,
   LinkedDocsPanel,
+  IssueEpicPanel,
 ];
