@@ -1,74 +1,24 @@
-# Cloudflare Workers Builds — deploy from monorepo root (see deploy.sh / pnpm run deploy).
-# Local dev still uses packages/api/wrangler.toml (staging defaults).
-#
-# Branch mapping (scripts/cloudflare-deploy.sh):
-#   main    → top-level env (production Worker)
-#   preview → --env staging
+# Cloudflare Workers Builds — matches dashboard project "great-manut"
+# Build: pnpm run build:cf  →  opennextjs-cloudflare build (.open-next/)
+# Note: "build" is next build only — OpenNext invokes it internally; do not point Workers Builds at "build".
+# Deploy: npx wrangler deploy
 
-name = "great-manut-api"
-main = "packages/api/src/index.ts"
-compatibility_date = "2026-06-21"
-compatibility_flags = ["nodejs_compat"]
-account_id = "187ab61ed9dbc6e616cb23e6b95aa8f1"
+"$schema" = "./node_modules/wrangler/config-schema.json"
+name = "great-manut"
+main = ".open-next/worker.js"
+compatibility_date = "2026-06-27"
+compatibility_flags = ["nodejs_compat", "global_fetch_strictly_public"]
+
+[assets]
+directory = ".open-next/assets"
+binding = "ASSETS"
 
 [observability]
 enabled = true
 
-[vars]
-APP_ENV = "production"
-APP_ORIGIN = "https://app.greatmanut.xyz"
-JWT_ISSUER = "great-manut"
-ACCESS_TOKEN_TTL_SECONDS = "3600"
+[[services]]
+binding = "WORKER_SELF_REFERENCE"
+service = "great-manut"
 
-[[d1_databases]]
-binding = "DB"
-database_name = "great-manut-prod"
-database_id = "7ab2abcb-f876-4a35-996b-4d1a1e8c2fd1"
-migrations_dir = "packages/api/migrations"
-
-[[kv_namespaces]]
-binding = "AUTH"
-id = "06c31f95835a4284b9a85a9e9b3003ec"
-
-[[r2_buckets]]
-binding = "UPLOADS"
-bucket_name = "great-manut-uploads-prod"
-
-[[durable_objects.bindings]]
-name = "SYNC_ROOMS"
-class_name = "SyncRoomDurableObject"
-
-[[migrations]]
-tag = "v1"
-new_sqlite_classes = ["SyncRoomDurableObject"]
-
-[env.staging]
-name = "great-manut-api-preview"
-
-[env.staging.vars]
-APP_ENV = "preview"
-APP_ORIGIN = "http://localhost:5173"
-JWT_ISSUER = "great-manut"
-ACCESS_TOKEN_TTL_SECONDS = "3600"
-
-[[env.staging.d1_databases]]
-binding = "DB"
-database_name = "great-manut-preview"
-database_id = "2b34f8e8-5793-4de3-b683-a2347de17578"
-migrations_dir = "packages/api/migrations"
-
-[[env.staging.kv_namespaces]]
-binding = "AUTH"
-id = "068e8ef8254a4f0eb39e698e4e7105dc"
-
-[[env.staging.r2_buckets]]
-binding = "UPLOADS"
-bucket_name = "great-manut-uploads-preview"
-
-[[env.staging.durable_objects.bindings]]
-name = "SYNC_ROOMS"
-class_name = "SyncRoomDurableObject"
-
-[[env.staging.migrations]]
-tag = "v1"
-new_sqlite_classes = ["SyncRoomDurableObject"]
+[images]
+binding = "IMAGES"
