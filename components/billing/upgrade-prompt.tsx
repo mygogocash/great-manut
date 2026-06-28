@@ -14,26 +14,51 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { PRO_PLAN } from "@/lib/plans";
 import {
-  matchPlanLimitMessage,
+  ENTERPRISE_PLAN,
+  PRO_PLAN,
+  type PlanDefinition,
+} from "@/lib/plans";
+import {
+  FEATURE_GATE_COPY,
+  matchUpgradePromptMessage,
   PLAN_LIMIT_COPY,
-  PlanLimitKind,
+  type UpgradePromptKind,
 } from "./plan-limit-error";
+
+function copyForKind(kind: UpgradePromptKind): {
+  title: string;
+  description: string;
+  targetPlan: PlanDefinition;
+} {
+  if (kind === "issues" || kind === "projects" || kind === "seats") {
+    return {
+      ...PLAN_LIMIT_COPY[kind],
+      targetPlan: PRO_PLAN,
+    };
+  }
+  const feature = FEATURE_GATE_COPY[kind];
+  return {
+    title: feature.title,
+    description: feature.description,
+    targetPlan:
+      feature.targetPlan === "enterprise" ? ENTERPRISE_PLAN : PRO_PLAN,
+  };
+}
 
 export function UpgradePromptDialog({
   open,
   onOpenChange,
-  limit,
+  kind,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  limit: PlanLimitKind;
+  kind: UpgradePromptKind;
 }) {
   const membership = useQuery(api.organizations.myMembership);
   const updatePlan = useMutation(api.organizations.updatePlan);
   const isAdmin = membership?.role === "admin";
-  const copy = PLAN_LIMIT_COPY[limit];
+  const { title, description, targetPlan } = copyForKind(kind);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -42,12 +67,12 @@ export function UpgradePromptDialog({
           <div className="mb-1 flex size-8 items-center justify-center rounded-md bg-primary/15">
             <Sparkles className="size-4 text-primary" />
           </div>
-          <DialogTitle>{copy.title}</DialogTitle>
-          <DialogDescription>{copy.description}</DialogDescription>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
 
         <ul className="flex flex-col gap-1.5 rounded-md border bg-muted/40 p-3">
-          {PRO_PLAN.highlights.map((highlight) => (
+          {targetPlan.highlights.slice(0, 4).map((highlight) => (
             <li
               key={highlight}
               className="flex items-center gap-2 text-xs text-muted-foreground"
@@ -69,9 +94,9 @@ export function UpgradePromptDialog({
             <Button
               size="sm"
               onClick={() => {
-                void updatePlan({ plan: "pro" })
+                void updatePlan({ plan: targetPlan.plan })
                   .then(() => {
-                    toast.success("Welcome to Manut Pro");
+                    toast.success(`Welcome to Manut ${targetPlan.name}`);
                     onOpenChange(false);
                   })
                   .catch((error: unknown) => {
@@ -83,7 +108,7 @@ export function UpgradePromptDialog({
                   });
               }}
             >
-              Upgrade to Pro · ${PRO_PLAN.monthlyPrice}/mo
+              Upgrade to {targetPlan.name} · ${targetPlan.monthlyPrice}/mo
             </Button>
           ) : (
             <Button size="sm" disabled>
@@ -100,8 +125,8 @@ const seenToastIds = new Set<string | number>();
 
 export function PlanLimitListener() {
   const { toasts } = useSonner();
-  const pendingKindRef = useRef<PlanLimitKind | null>(null);
-  const [limit, setLimit] = useState<PlanLimitKind | null>(null);
+  const pendingKindRef = useRef<UpgradePromptKind | null>(null);
+  const [kind, setKind] = useState<UpgradePromptKind | null>(null);
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -114,9 +139,10 @@ export function PlanLimitListener() {
       const description =
         typeof t.description === "string" ? t.description : "";
       const match =
-        matchPlanLimitMessage(title) ?? matchPlanLimitMessage(description);
+        matchUpgradePromptMessage(title) ??
+        matchUpgradePromptMessage(description);
       if (match) {
-        pendingKindRef.current = match.kind;
+        pendingKindRef.current = match;
       }
     }
     if (pendingKindRef.current === null) {
@@ -124,7 +150,7 @@ export function PlanLimitListener() {
     }
     const timer = window.setTimeout(() => {
       if (pendingKindRef.current !== null) {
-        setLimit(pendingKindRef.current);
+        setKind(pendingKindRef.current);
         setOpen(true);
         pendingKindRef.current = null;
       }
@@ -132,11 +158,11 @@ export function PlanLimitListener() {
     return () => window.clearTimeout(timer);
   }, [toasts]);
 
-  if (limit === null) {
+  if (kind === null) {
     return null;
   }
 
   return (
-    <UpgradePromptDialog open={open} onOpenChange={setOpen} limit={limit} />
+    <UpgradePromptDialog open={open} onOpenChange={setOpen} kind={kind} />
   );
 }

@@ -3,6 +3,7 @@ import { Doc, Id } from "./_generated/dataModel";
 import { QueryCtx, MutationCtx } from "./_generated/server";
 import { getOrgIssue } from "./issues";
 import { orgMutation, orgQuery } from "./lib/customFunctions";
+import { assertHasDocsWrite } from "./lib/limits";
 import { slugifyName } from "./lib/slug";
 import { userDisplayName, userImageUrl } from "./lib/userDisplay";
 import { parseIssueKeys } from "../lib/issue-key";
@@ -240,6 +241,7 @@ export const spacesCreate = orgMutation({
   },
   returns: v.id("docSpaces"),
   handler: async (ctx, args) => {
+    assertHasDocsWrite(ctx.org);
     const name = args.name.trim();
     if (!name) {
       throw new Error("Space name is required");

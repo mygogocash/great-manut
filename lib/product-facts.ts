@@ -16,15 +16,15 @@ export const ENTITY_TRIPLE = {
 
 /** Short hero hook for human visitors. */
 export const HERO_LEDE =
-  "Manut is how fast product teams plan, track, and ship — issues, boards, and cycles in a keyboard-first workspace, with an AI agent that handles the busywork.";
+  "Manut is how fast product teams plan, capture knowledge, serve customers, and ship — issues, docs, discovery, service desk, and an AI agent in one keyboard-first workspace.";
 
 /** One-line footer blurb (avoid duplicating the full definition below). */
 export const FOOTER_TAGLINE =
-  "The issue tracker built for speed — plan, track, and ship with your whole team.";
+  "The teamwork suite built for speed — Plan, Knowledge, Service, and AI in one workspace.";
 
 /** 40–60 word definition for FAQ, llms.txt, speakable schema, and agent footer. */
 export const PRODUCT_DEFINITION =
-  "Manut is an issue tracker for product teams who want to plan, track, and ship without slowing down. It combines issues, kanban boards, and cycles in one keyboard-first workspace, with an AI agent on Pro that files work, summarizes cycles, and catches duplicates.";
+  "Manut is a teamwork suite for product teams who want to plan, track, and ship without slowing down. It combines Plan (issues, boards, cycles), Knowledge (docs and discovery), Service (customer portal and queues on Enterprise), and AI (org-scoped agent on Pro) in one keyboard-first workspace.";
 
 export const CONTACT_EMAIL = "hello@manut.xyz";
 
@@ -55,6 +55,21 @@ export const PRODUCT_FEATURES = [
       "Command palette and single-key shortcuts so your hands never leave the keyboard.",
   },
   {
+    term: "Knowledge (Docs)",
+    definition:
+      "Team wikis with version history and issue links; read on Free, create spaces on Pro.",
+  },
+  {
+    term: "Discovery",
+    definition:
+      "Ideas board with impact/effort scoring and promote-to-issue on Pro and Enterprise.",
+  },
+  {
+    term: "Service desk",
+    definition:
+      "Customer portal, agent queues, and request-to-issue conversion on Enterprise.",
+  },
+  {
     term: "Saved views & search",
     definition:
       "Full-text search and filterable saved views scoped to your workspace.",
@@ -83,7 +98,7 @@ export const FAQ_ITEMS: FaqItem[] = [
   {
     question: "What is Manut?",
     answer:
-      "Manut is an issue tracker built for product teams. It brings issues, kanban boards, cycles, and an AI agent into one fast workspace. Teams use Manut to plan sprints, track work on a board, and ship together — with keyboard shortcuts and real-time sync on every change.",
+      "Manut is a teamwork suite for product teams. It brings Plan (issues, boards, cycles), Knowledge (docs and discovery), Service (service desk on Enterprise), and AI (workspace agent on Pro) into one fast workspace — with keyboard shortcuts and real-time sync on every change.",
   },
   {
     question: "Is Manut free?",

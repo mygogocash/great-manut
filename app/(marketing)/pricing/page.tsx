@@ -25,12 +25,12 @@ export default function PricingPage() {
             Pricing
           </span>
           <h1 className="text-4xl font-semibold tracking-tight text-balance">
-            Pricing that scales with your team
+            Suite pricing that scales with your team
           </h1>
           <p className="max-w-lg text-sm text-muted-foreground text-balance">
-            Free for small teams. Pro for AI superpowers. Enterprise for
-            unlimited scale. Plans are billed per workspace — switch or cancel
-            any time.
+            Free for Plan basics and reading docs. Pro adds Knowledge, Discovery,
+            and AI. Enterprise unlocks Service desk and Automations. Billed per
+            workspace — switch or cancel any time.
           </p>
         </div>
 

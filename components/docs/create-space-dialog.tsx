@@ -3,7 +3,9 @@
 import { useMutation } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
 import { api } from "@/convex/_generated/api";
+import { getErrorMessage } from "@/components/billing/plan-limit-error";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -46,6 +48,8 @@ export function CreateSpaceDialog({
       setName("");
       setDescription("");
       router.push(`/${orgSlug}/docs/space/${spaceId}`);
+    } catch (error) {
+      toast.error(getErrorMessage(error) || "Failed to create space");
     } finally {
       setSubmitting(false);
     }
