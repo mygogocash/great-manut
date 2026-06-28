@@ -19,7 +19,25 @@ const isPublicRoute = createRouteMatcher([
   "/pricing(.*)",
   "/sign-in(.*)",
   "/sign-up(.*)",
+  "/ingest(.*)",
 ]);
+
+/** Skip JWT work on routes that never need an auth decision. */
+function needsAuthCheck(request: NextRequest): boolean {
+  const host = request.nextUrl.hostname;
+  const { pathname } = request.nextUrl;
+
+  if (host === "www.manut.xyz" || host === "www.app.manut.xyz") {
+    return false;
+  }
+  if ((MARKETING_HOSTS as readonly string[]).includes(host)) {
+    return false;
+  }
+  if (isPublicRoute(request) && !(host === APP_HOST && pathname === "/")) {
+    return false;
+  }
+  return true;
+}
 
 function hostBasedRedirect(
   request: NextRequest,
@@ -30,6 +48,12 @@ function hostBasedRedirect(
   if (host === "www.manut.xyz") {
     const url = request.nextUrl.clone();
     url.hostname = "manut.xyz";
+    return NextResponse.redirect(url, 308);
+  }
+
+  if (host === "www.app.manut.xyz") {
+    const url = request.nextUrl.clone();
+    url.hostname = APP_HOST;
     return NextResponse.redirect(url, 308);
   }
 
@@ -62,22 +86,24 @@ function hostBasedRedirect(
 }
 
 export default convexAuthNextjsMiddleware(async (request, { convexAuth }) => {
-  const redirect = hostBasedRedirect(
-    request,
-    await convexAuth.isAuthenticated(),
-  );
+  const checkAuth = needsAuthCheck(request);
+  const isAuthenticated = checkAuth
+    ? await convexAuth.isAuthenticated()
+    : false;
+
+  const redirect = hostBasedRedirect(request, isAuthenticated);
   if (redirect) {
     return redirect;
   }
 
-  if (!isPublicRoute(request) && !(await convexAuth.isAuthenticated())) {
+  if (checkAuth && !isPublicRoute(request) && !isAuthenticated) {
     return nextjsMiddlewareRedirect(request, "/sign-in");
   }
 });
 
 export const config = {
   matcher: [
-    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
+    "/((?!_next|ingest|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
     "/(api|trpc)(.*)",
   ],
 };

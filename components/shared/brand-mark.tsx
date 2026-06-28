@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-const LOGO = "/manut-logo.jpeg";
+const LOGO = "/manut-logo.webp";
 
 type BrandMarkProps = {
   href?: string;

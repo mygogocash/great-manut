@@ -96,6 +96,6 @@ Do not start dev servers or push to the Convex deployment from a worktree.
 - Auth uses Convex Auth (`@convex-dev/auth`) with email/password; Clerk was removed — ignore stale Clerk references elsewhere in this file.
 - Edge auth middleware lives in `middleware.ts` (not Next 16 `proxy.ts`) for OpenNext on Cloudflare.
 - ESLint must ignore `.open-next/**` (OpenNext build artifacts break lint otherwise).
-- Convex backend must be deployed to `modest-schnauzer-996` for sign-in to work (`npx convex dev --once` locally or `CONVEX_DEPLOY_KEY` in CI); undeployed `convex/auth.ts` yields missing `auth:signIn`.
+- Convex dev deployment: `sincere-oriole-287` (project `great-manut`, team `kunanon-jarat`). Run `npx convex dev` from main checkout.
 - GitHub repo is `mygogocash/great-manut`.
 - PostHog analytics via `posthog-js` + `instrumentation-client.ts`; events proxy through `/ingest` rewrites in `next.config.ts`. Set `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` at build time (`.env.local` + Cloudflare Workers Builds env). B2B org grouping uses PostHog `organization` group from `organizations.current`.

@@ -25,7 +25,14 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      # GitHub forbids `secrets.*` in job/step `if:` expressions — check in-shell instead.
       - name: Deploy to Convex
         env:
           CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
-        run: npx convex deploy --yes
+          CONVEX_DEPLOYMENT: dev:sincere-oriole-287
+        run: |
+          if [ -z "$CONVEX_DEPLOY_KEY" ]; then
+            echo "::warning::CONVEX_DEPLOY_KEY is not set — skipping Convex deploy."
+            exit 0
+          fi
+          npx convex deploy --yes

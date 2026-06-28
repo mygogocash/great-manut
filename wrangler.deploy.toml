@@ -29,8 +29,11 @@ service = "great-manut"
 binding = "IMAGES"
 
 [vars]
-NEXT_PUBLIC_CONVEX_URL = "https://modest-schnauzer-996.convex.cloud"
-NEXT_PUBLIC_CONVEX_SITE_URL = "https://modest-schnauzer-996.convex.site"
+NEXT_PUBLIC_CONVEX_URL = "https://sincere-oriole-287.convex.cloud"
+NEXT_PUBLIC_CONVEX_SITE_URL = "https://sincere-oriole-287.convex.site"
+NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN = "phc_UM5i50kvCKW8wTXrInMjQrFWzTplgEpTbAm44WxDuBW"
+NEXT_PUBLIC_POSTHOG_HOST = "https://us.i.posthog.com"
+NEXT_PUBLIC_POSTHOG_UI_HOST = "https://us.posthog.com"
 
 [[routes]]
 pattern = "app.manut.xyz"

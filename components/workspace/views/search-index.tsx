@@ -34,12 +34,8 @@ function useDebouncedValue<T>(value: T, delayMs: number): T {
   return debounced;
 }
 
-/**
- * Workspace-wide full-text issue search (Track A), backed by the
- * search_title / search_description indexes. Reachable via the "/" shortcut
- * and the command palette.
- */
-export default function SearchPage() {
+/** Workspace-wide full-text issue search. */
+export function SearchIndexView() {
   const params = useParams<{ orgSlug: string }>();
   const [query, setQuery] = useState("");
   const [teamFilter, setTeamFilter] = useState<string>(ALL_TEAMS);
@@ -55,11 +51,10 @@ export default function SearchPage() {
             ? { teamId: teamFilter as Id<"teams"> }
             : {}),
         }
-      : "skip"
+      : "skip",
   );
 
-  const searching =
-    debouncedQuery.length > 0 && results === undefined;
+  const searching = debouncedQuery.length > 0 && results === undefined;
   const waitingForDebounce =
     query.trim().length > 0 && query.trim() !== debouncedQuery;
 
@@ -133,6 +128,7 @@ export default function SearchPage() {
                   <Link
                     key={issue._id}
                     href={`/${params.orgSlug}/issue/${issue._id}`}
+                    prefetch={false}
                     className="group flex h-10 items-center gap-3 border-b px-2 text-sm transition-colors hover:bg-accent/50"
                   >
                     <PriorityIcon priority={issue.priority} />
