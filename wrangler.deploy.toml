@@ -26,6 +26,10 @@ service = "great-manut"
 [images]
 binding = "IMAGES"
 
+[vars]
+NEXT_PUBLIC_CONVEX_URL = "https://modest-schnauzer-996.convex.cloud"
+NEXT_PUBLIC_CONVEX_SITE_URL = "https://modest-schnauzer-996.convex.site"
+
 [[routes]]
 pattern = "app.manut.xyz"
 custom_domain = true
