@@ -31,3 +31,9 @@ jobs:
           CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
           CONVEX_DEPLOYMENT: dev:modest-schnauzer-996
         run: npx convex deploy --yes
+
+      - name: Set Convex auth site URL
+        env:
+          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
+          CONVEX_DEPLOYMENT: dev:modest-schnauzer-996
+        run: npx convex env set CONVEX_SITE_URL https://modest-schnauzer-996.convex.site --yes

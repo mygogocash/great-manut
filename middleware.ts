@@ -34,6 +34,12 @@ function hostBasedRedirect(
     return NextResponse.redirect(url, 308);
   }
 
+  if (host === "www.app.manut.xyz") {
+    const url = request.nextUrl.clone();
+    url.hostname = APP_HOST;
+    return NextResponse.redirect(url, 308);
+  }
+
   if ((MARKETING_HOSTS as readonly string[]).includes(host)) {
     if (isAppPath(request.nextUrl.pathname)) {
       const url = new URL(
@@ -76,7 +82,7 @@ export default convexAuthNextjsMiddleware(async (request, { convexAuth }) => {
 
 export const config = {
   matcher: [
-    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
+    "/((?!_next|ingest|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
     "/(api|trpc)(.*)",
   ],
 };

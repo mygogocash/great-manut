@@ -7,7 +7,7 @@ export function authErrorMessage(error: unknown): string {
     raw.includes("Could not find public function") &&
     raw.includes("auth:signIn")
   ) {
-    return "Sign-in is temporarily unavailable — the backend has not been deployed yet. Ask your admin to run ./scripts/deploy-convex.sh.";
+    return "Sign-in is temporarily unavailable — the Convex backend has not been deployed yet. An admin needs to run pnpm deploy:convex (requires access to modest-schnauzer-996 or CONVEX_DEPLOY_KEY in CI).";
   }
 
   if (raw.includes("InvalidAccountId") || raw.includes("InvalidSecret")) {
