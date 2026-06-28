@@ -9,6 +9,7 @@ account_id = "187ab61ed9dbc6e616cb23e6b95aa8f1"
 main = ".open-next/worker.js"
 compatibility_date = "2026-06-27"
 compatibility_flags = ["nodejs_compat", "global_fetch_strictly_public"]
+workers_dev = true
 
 [assets]
 directory = ".open-next/assets"
@@ -23,3 +24,7 @@ service = "great-manut"
 
 [images]
 binding = "IMAGES"
+
+[[routes]]
+pattern = "app.manut.xyz"
+custom_domain = true

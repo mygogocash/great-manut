@@ -26,6 +26,8 @@ service = "great-manut"
 [images]
 binding = "IMAGES"
 
-[[migrations]]
-tag = "v2-vector-opennext"
-deleted_classes = ["SyncRoomDurableObject"]
+[[routes]]
+pattern = "app.manut.xyz"
+custom_domain = true
+
+# Migration already applied on live great-manut; kept for reference only.
