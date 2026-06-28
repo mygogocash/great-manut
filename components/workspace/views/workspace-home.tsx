@@ -12,7 +12,7 @@ import { Loader2, Sparkles } from "lucide-react";
  * Workspace home — redirects to the first team's issues, or shows the
  * empty state nudging team creation (the sidebar has the create button).
  */
-export default function WorkspaceHomePage() {
+export function WorkspaceHomeView() {
   const params = useParams<{ orgSlug: string }>();
   const router = useRouter();
   const teams = useQuery(api.teams.list);
@@ -32,12 +32,12 @@ export default function WorkspaceHomePage() {
     try {
       const result = await seedDemoData({});
       toast.success(
-        `Demo workspace ready — ${result.teams} teams, ${result.issues} issues, ${result.projects} projects.`
+        `Demo workspace ready — ${result.teams} teams, ${result.issues} issues, ${result.projects} projects.`,
       );
     } catch (error) {
       setSeeding(false);
       toast.error(
-        error instanceof Error ? error.message : "Seeding demo data failed."
+        error instanceof Error ? error.message : "Seeding demo data failed.",
       );
     }
   };
