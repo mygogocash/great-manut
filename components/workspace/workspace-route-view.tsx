@@ -10,6 +10,9 @@ import { SearchIndexView } from "./views/search-index";
 import { TeamBoardView } from "./views/team-board";
 import { TeamIssuesView } from "./views/team-issues";
 import { WorkspaceHomeView } from "./views/workspace-home";
+import { DocsIndexView } from "./views/docs-index-view";
+import { DocsSpaceView } from "./views/docs-space-view";
+import { DocsPageView } from "./views/docs-page-view";
 
 /**
  * Single client router for all sidebar workspace routes.
@@ -32,6 +35,12 @@ export function WorkspaceRouteView() {
       return <AiAgentPage />;
     case "search":
       return <SearchIndexView />;
+    case "docs":
+      return <DocsIndexView />;
+    case "docs-space":
+      return <DocsSpaceView spaceId={route.spaceId} />;
+    case "docs-page":
+      return <DocsPageView pageId={route.pageId} />;
     case "team":
       return <TeamIssuesView teamId={route.teamId as Id<"teams">} />;
     case "team-board":

@@ -50,6 +50,12 @@ export const issueRelationTypeValidator = v.union(
   v.literal("duplicate_of")
 );
 
+/** Doc page lifecycle — archived pages keep `archivedAt` set. */
+export const docPageStatusValidator = v.union(
+  v.literal("active"),
+  v.literal("archived")
+);
+
 export default defineSchema({
   ...authTables,
   users: defineTable({
@@ -243,4 +249,73 @@ export default defineSchema({
   })
     .index("by_org", ["orgId"])
     .index("by_creator", ["creatorId"]),
+
+  // ── Docs / Wiki (Track G) ────────────────────────────────────────────────
+  docSpaces: defineTable({
+    orgId: v.id("organizations"),
+    name: v.string(),
+    slug: v.string(),
+    description: v.optional(v.string()),
+    teamId: v.optional(v.id("teams")),
+    icon: v.optional(v.string()),
+    createdBy: v.id("users"),
+    createdAt: v.number(),
+    archivedAt: v.optional(v.number()),
+  })
+    .index("by_org", ["orgId"])
+    .index("by_org_and_slug", ["orgId", "slug"]),
+
+  docPages: defineTable({
+    orgId: v.id("organizations"),
+    spaceId: v.id("docSpaces"),
+    parentPageId: v.optional(v.id("docPages")),
+    title: v.string(),
+    slug: v.string(),
+    sortOrder: v.number(),
+    currentRevisionId: v.optional(v.id("docPageRevisions")),
+    createdBy: v.id("users"),
+    updatedAt: v.number(),
+    archivedAt: v.optional(v.number()),
+    /** Denormalized body snippet for search + previews */
+    bodySnippet: v.optional(v.string()),
+  })
+    .index("by_org", ["orgId"])
+    .index("by_space", ["spaceId"])
+    .index("by_space_and_slug", ["spaceId", "slug"])
+    .index("by_parent", ["parentPageId"])
+    .searchIndex("search_title", {
+      searchField: "title",
+      filterFields: ["orgId", "spaceId"],
+    })
+    .searchIndex("search_body", {
+      searchField: "bodySnippet",
+      filterFields: ["orgId", "spaceId"],
+    }),
+
+  docPageRevisions: defineTable({
+    orgId: v.id("organizations"),
+    pageId: v.id("docPages"),
+    body: v.string(),
+    editorId: v.id("users"),
+    createdAt: v.number(),
+    changeSummary: v.optional(v.string()),
+  }).index("by_page", ["pageId"]),
+
+  docComments: defineTable({
+    orgId: v.id("organizations"),
+    pageId: v.id("docPages"),
+    authorId: v.id("users"),
+    body: v.string(),
+    mentions: v.optional(v.array(v.id("users"))),
+    createdAt: v.number(),
+  }).index("by_page", ["pageId"]),
+
+  docPageIssueLinks: defineTable({
+    orgId: v.id("organizations"),
+    pageId: v.id("docPages"),
+    issueId: v.id("issues"),
+  })
+    .index("by_page", ["pageId"])
+    .index("by_issue", ["issueId"])
+    .index("by_org_and_issue", ["orgId", "issueId"]),
 });

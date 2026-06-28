@@ -4,6 +4,9 @@ export type WorkspaceRoute =
   | { kind: "cycles" }
   | { kind: "ai" }
   | { kind: "search" }
+  | { kind: "docs" }
+  | { kind: "docs-space"; spaceId: string }
+  | { kind: "docs-page"; pageId: string }
   | { kind: "team"; teamId: string }
   | { kind: "team-board"; teamId: string }
   | { kind: "unknown" };
@@ -29,6 +32,15 @@ export function parseWorkspaceRoute(
   }
   if (first === "search" && section.length === 1) {
     return { kind: "search" };
+  }
+  if (first === "docs" && section.length === 1) {
+    return { kind: "docs" };
+  }
+  if (first === "docs" && second === "space" && third && section.length === 3) {
+    return { kind: "docs-space", spaceId: third };
+  }
+  if (first === "docs" && second === "page" && third && section.length === 3) {
+    return { kind: "docs-page", pageId: third };
   }
   if (first === "team" && second && section.length === 2) {
     return { kind: "team", teamId: second };

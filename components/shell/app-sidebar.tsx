@@ -5,6 +5,7 @@ import { useQuery } from "convex/react";
 import {
   Bot,
   Box,
+  BookOpen,
   ChevronDown,
   Plus,
   RefreshCcw,
@@ -96,11 +97,11 @@ export function AppSidebar() {
           <NavLink href={`${base}/projects`} icon={<Box className="size-4" />}>
             Projects
           </NavLink>
-          <NavLink
-            href={`${base}/cycles`}
-            icon={<RefreshCcw className="size-4" />}
-          >
+          <NavLink href={`${base}/cycles`} icon={<RefreshCcw className="size-4" />}>
             Cycles
+          </NavLink>
+          <NavLink href={`${base}/docs`} icon={<BookOpen className="size-4" />}>
+            Docs
           </NavLink>
           <NavLink href={`${base}/ai`} icon={<Bot className="size-4" />}>
             AI Agent

@@ -21,6 +21,8 @@ import type * as attachments from "../attachments.js";
 import type * as auth from "../auth.js";
 import type * as comments from "../comments.js";
 import type * as cycles from "../cycles.js";
+import type * as docComments from "../docComments.js";
+import type * as docs from "../docs.js";
 import type * as http from "../http.js";
 import type * as issueRelations from "../issueRelations.js";
 import type * as issues from "../issues.js";
@@ -60,6 +62,8 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   comments: typeof comments;
   cycles: typeof cycles;
+  docComments: typeof docComments;
+  docs: typeof docs;
   http: typeof http;
   issueRelations: typeof issueRelations;
   issues: typeof issues;
