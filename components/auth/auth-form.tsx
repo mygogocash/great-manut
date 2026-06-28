@@ -8,6 +8,8 @@ import { FormEvent, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { captureEvent } from "@/lib/posthog/client";
+import { PostHogEvents } from "@/lib/posthog/events";
 
 export function AuthForm({
   mode,
@@ -33,6 +35,12 @@ export function AuthForm({
         password,
         ...(mode === "signUp" ? { name: name.trim() || email.trim() } : {}),
       });
+      captureEvent(
+        mode === "signUp"
+          ? PostHogEvents.userSignedUp
+          : PostHogEvents.userSignedIn,
+        { method: "password" },
+      );
       router.push("/onboarding");
     } catch (caught) {
       setError(
@@ -52,7 +60,7 @@ export function AuthForm({
         <p className="mt-1 text-sm text-muted-foreground">
           {mode === "signUp"
             ? "Sign up to start tracking issues with your team."
-            : "Sign in to your Vector workspace."}
+            : "Sign in to your Manut workspace."}
         </p>
       </div>
 
@@ -118,7 +126,7 @@ export function AuthForm({
           </>
         ) : (
           <>
-            New to Vector?{" "}
+            New to Manut?{" "}
             <Link href="/sign-up" className="text-foreground underline-offset-4 hover:underline">
               Create an account
             </Link>

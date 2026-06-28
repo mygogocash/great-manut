@@ -71,7 +71,7 @@ export function UpgradePromptDialog({
               onClick={() => {
                 void updatePlan({ plan: "pro" })
                   .then(() => {
-                    toast.success("Welcome to Vector Pro");
+                    toast.success("Welcome to Manut Pro");
                     onOpenChange(false);
                   })
                   .catch((error: unknown) => {

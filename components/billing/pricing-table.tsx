@@ -17,6 +17,9 @@ import {
   priceForPeriod,
 } from "@/lib/plans";
 import { cn } from "@/lib/utils";
+import { appUrl } from "@/lib/site-urls";
+import { captureEvent } from "@/lib/posthog/client";
+import { PostHogEvents } from "@/lib/posthog/events";
 import { BillingPeriodToggle } from "./billing-period-toggle";
 
 export function PricingTable() {
@@ -105,7 +108,7 @@ function PlanCta({ plan }: { plan: PlanDefinition }) {
     <>
       <Unauthenticated>
         <Button variant={plan.popular ? "default" : "outline"} size="lg" className="w-full" asChild>
-          <Link href="/sign-up">
+          <Link href={appUrl("/sign-up")}>
             {plan.monthlyPrice === 0
               ? "Start for free"
               : `Start with ${plan.name}`}
@@ -141,7 +144,7 @@ function AuthenticatedPlanCta({ plan }: { plan: PlanDefinition }) {
   if (org === null) {
     return (
       <Button variant={variant} size="lg" className="w-full" asChild>
-        <Link href="/onboarding">Choose a workspace</Link>
+        <Link href={appUrl("/onboarding")}>Choose a workspace</Link>
       </Button>
     );
   }
@@ -170,7 +173,13 @@ function AuthenticatedPlanCta({ plan }: { plan: PlanDefinition }) {
       className="w-full"
       onClick={() => {
         void updatePlan({ plan: plan.plan })
-          .then(() => toast.success(`Switched to ${plan.name}`))
+          .then(() => {
+            captureEvent(PostHogEvents.planUpgradeClicked, {
+              target_plan: plan.plan,
+              previous_plan: org.plan,
+            });
+            toast.success(`Switched to ${plan.name}`);
+          })
           .catch((error: unknown) => {
             toast.error(
               error instanceof Error ? error.message : "Failed to update plan"

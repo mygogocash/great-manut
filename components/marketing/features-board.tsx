@@ -1,10 +1,16 @@
+"use client";
+
 import { LayoutGrid, RefreshCcw, Target, TrendingUp } from "lucide-react";
+import { useState } from "react";
 import { FeatureBullet } from "@/components/marketing/feature-bullet";
 import { MockBoard } from "@/components/marketing/mock-board";
 import { MockCycle } from "@/components/marketing/mock-cycle";
 import { Section, SectionHeading } from "@/components/marketing/section";
 
 export function FeaturesBoard() {
+  const [selectedIssueId, setSelectedIssueId] = useState<string | null>(null);
+  const [cycleDay, setCycleDay] = useState<number | null>(null);
+
   return (
     <Section id="cycles">
       <SectionHeading
@@ -14,9 +20,16 @@ export function FeaturesBoard() {
         align="center"
       />
       <div className="mt-14 grid items-start gap-6 lg:grid-cols-[1fr_20rem]">
-        <MockBoard />
+        <MockBoard
+          selectedIssueId={selectedIssueId}
+          onSelectIssue={setSelectedIssueId}
+        />
         <div className="space-y-6">
-          <MockCycle />
+          <MockCycle
+            highlighted={selectedIssueId !== null}
+            activeDay={cycleDay}
+            onActiveDayChange={setCycleDay}
+          />
           <div className="grid gap-6 rounded-xl border bg-card/50 p-5">
             <FeatureBullet
               icon={LayoutGrid}

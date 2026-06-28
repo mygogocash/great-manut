@@ -1,19 +1,52 @@
+"use client";
+
 import { RefreshCcw } from "lucide-react";
+import { useMemo, useState } from "react";
 import { CYCLE_BARS } from "@/components/marketing/mock-data";
 import { cn } from "@/lib/utils";
 
+type MockCycleProps = {
+  className?: string;
+  highlighted?: boolean;
+  activeDay?: number | null;
+  onActiveDayChange?: (day: number | null) => void;
+};
+
 /**
- * Compact cycle progress card: header, progress bar, scope stats, and a
- * tiny burnup chart drawn with plain divs.
+ * Compact cycle progress card with a scrubbable burnup chart.
  */
-export function MockCycle({ className }: { className?: string }) {
+export function MockCycle({
+  className,
+  highlighted = false,
+  activeDay: activeDayProp,
+  onActiveDayChange,
+}: MockCycleProps) {
+  const [internalDay, setInternalDay] = useState<number | null>(null);
+  const activeDay = activeDayProp ?? internalDay;
+  const setActiveDay = onActiveDayChange ?? setInternalDay;
+
   const scope = 38;
-  const completed = CYCLE_BARS[CYCLE_BARS.length - 1];
+  const dayIndex =
+    activeDay ?? CYCLE_BARS.length - 1;
+  const completed = CYCLE_BARS[dayIndex] ?? CYCLE_BARS[CYCLE_BARS.length - 1];
   const percent = Math.round((completed / scope) * 100);
   const max = Math.max(...CYCLE_BARS);
 
+  const dayLabel = useMemo(() => {
+    const start = new Date(2026, 5, 2);
+    const date = new Date(start);
+    date.setDate(start.getDate() + dayIndex);
+    return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  }, [dayIndex]);
+
   return (
-    <div className={cn("rounded-xl border bg-card p-4 shadow-sm", className)}>
+    <div
+      className={cn(
+        "rounded-xl border bg-card p-4 shadow-sm transition-[box-shadow,border-color]",
+        highlighted && "border-primary/40 shadow-md shadow-primary/5",
+        className,
+      )}
+    >
       <div className="flex items-center gap-2">
         <RefreshCcw className="size-3.5 text-muted-foreground" />
         <span className="text-sm font-medium">Cycle 14</span>
@@ -24,7 +57,7 @@ export function MockCycle({ className }: { className?: string }) {
       </div>
       <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted">
         <div
-          className="h-full rounded-full bg-emerald-500"
+          className="h-full rounded-full bg-emerald-500 transition-[width] duration-200"
           style={{ width: `${percent}%` }}
         />
       </div>
@@ -42,21 +75,45 @@ export function MockCycle({ className }: { className?: string }) {
           Completed {completed}
         </span>
       </div>
-      <div className="mt-4 flex h-12 items-end gap-1" aria-hidden>
-        {CYCLE_BARS.map((value, index) => (
-          <div
-            key={index}
-            className={
-              index === CYCLE_BARS.length - 1
-                ? "flex-1 rounded-sm bg-emerald-500"
-                : "flex-1 rounded-sm bg-foreground/10"
-            }
-            style={{ height: `${Math.max(8, (value / max) * 100)}%` }}
-          />
-        ))}
+      <div
+        className="mt-4 flex h-12 items-end gap-1"
+        role="group"
+        aria-label="Cycle burnup chart"
+        onMouseLeave={() => setActiveDay(null)}
+      >
+        {CYCLE_BARS.map((value, index) => {
+          const isActive = index === dayIndex;
+          return (
+            <button
+              key={index}
+              type="button"
+              aria-label={`Day ${index + 1}: ${value} completed`}
+              aria-pressed={isActive}
+              className={cn(
+                "flex-1 rounded-sm transition-[height,background-color,transform] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                isActive
+                  ? "bg-emerald-500"
+                  : "bg-foreground/10 hover:bg-emerald-500/40",
+                isActive && "scale-y-105",
+              )}
+              style={{ height: `${Math.max(8, (value / max) * 100)}%` }}
+              onMouseEnter={() => setActiveDay(index)}
+              onFocus={() => setActiveDay(index)}
+              onBlur={() => setActiveDay(null)}
+            />
+          );
+        })}
       </div>
       <p className="mt-2 text-[10px] text-muted-foreground">
-        Unfinished issues roll into Cycle 15 automatically.
+        {activeDay !== null ? (
+          <>
+            <span className="font-medium text-foreground">{dayLabel}</span>
+            {" · "}
+            {completed} issues completed
+          </>
+        ) : (
+          "Hover the chart to scrub progress · unfinished issues roll into Cycle 15"
+        )}
       </p>
     </div>
   );

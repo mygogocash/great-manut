@@ -116,7 +116,7 @@ export function AiMessage({ message }: { message: UIMessage }) {
           )}
         >
           <CircleAlert className="size-3" />
-          Vector couldn&apos;t finish this response. Try sending your message
+          Manut couldn&apos;t finish this response. Try sending your message
           again.
         </p>
       )}

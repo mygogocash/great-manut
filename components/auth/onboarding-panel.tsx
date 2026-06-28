@@ -10,6 +10,8 @@ import { Id } from "@/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { captureEvent } from "@/lib/posthog/client";
+import { PostHogEvents } from "@/lib/posthog/events";
 
 export function OnboardingPanel() {
   const router = useRouter();
@@ -30,6 +32,10 @@ export function OnboardingPanel() {
     setCreating(true);
     try {
       const { slug } = await createWorkspace({ name: name.trim() });
+      captureEvent(PostHogEvents.workspaceCreated, {
+        workspace_name: name.trim(),
+        workspace_slug: slug,
+      });
       toast.success("Workspace created");
       router.push(`/${slug}`);
     } catch (error) {
@@ -55,6 +61,10 @@ export function OnboardingPanel() {
   const handleAccept = async (token: string, slug: string) => {
     try {
       await acceptInvitation({ token });
+      captureEvent(PostHogEvents.workspaceJoined, {
+        workspace_slug: slug,
+        source: "invitation",
+      });
       toast.success("Invitation accepted");
       router.push(`/${slug}`);
     } catch (error) {
