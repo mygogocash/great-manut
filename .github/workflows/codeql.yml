@@ -13,11 +13,15 @@ name: "CodeQL Advanced"
 
 on:
   push:
-    branches: [ "preview" ]
+    branches: [main, preview]
   pull_request:
-    branches: [ "preview" ]
+    branches: [main, preview]
   schedule:
     - cron: '45 21 * * 2'
+
+concurrency:
+  group: codeql-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   analyze:

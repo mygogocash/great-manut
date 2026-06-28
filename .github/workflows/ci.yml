@@ -1,0 +1,98 @@
+name: CI
+
+on:
+  push:
+    branches: [main, preview]
+  pull_request:
+    branches: [main, preview]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  NEXT_PUBLIC_CONVEX_URL: https://sincere-oriole-287.convex.cloud
+  NEXT_PUBLIC_CONVEX_SITE_URL: https://sincere-oriole-287.convex.site
+  NEXT_PUBLIC_POSTHOG_HOST: https://us.i.posthog.com
+  NEXT_PUBLIC_POSTHOG_UI_HOST: https://us.posthog.com
+  NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN: phc_ci_placeholder
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+
+  typecheck:
+    name: Typecheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build:next
+
+  audit:
+    name: Security audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm audit:ci
