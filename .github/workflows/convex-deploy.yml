@@ -46,4 +46,4 @@ jobs:
             echo "::warning::CONVEX_DEPLOY_KEY is not set — skipping env sync."
             exit 0
           fi
-          npx convex env set CONVEX_SITE_URL https://sincere-oriole-287.convex.site --yes
+          npx convex env set CONVEX_SITE_URL https://sincere-oriole-287.convex.site
