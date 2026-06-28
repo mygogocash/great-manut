@@ -1,8 +1,9 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server";
 import { Providers } from "@/components/providers";
 import { Toaster } from "@/components/ui/sonner";
+import { metadataBase } from "@/lib/seo";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -16,12 +17,27 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase,
   title: {
     default: "Manut — Plan. Build. Ship.",
     template: "%s · Manut",
   },
   description:
     "Manut is the issue tracker built for speed. Plan projects, run cycles, and ship with your team — with an AI agent on call.",
+  icons: {
+    icon: "/manut-logo.webp",
+    apple: "/manut-logo.webp",
+  },
+  manifest: "/manifest.webmanifest",
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#09090b" },
+  ],
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({

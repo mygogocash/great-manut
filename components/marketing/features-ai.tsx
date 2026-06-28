@@ -20,14 +20,14 @@ export function FeaturesAi() {
           </div>
           <SectionHeading
             eyebrow="03 · AI Agent"
-            title="An AI agent on the roster"
-            lede="Manut's agent works inside your workspace with org-scoped tools — it files issues, summarizes cycles, drafts standups, and catches duplicates before they ship."
+            title="An AI agent that actually knows your backlog"
+            lede="Manut's AI agent works inside your workspace with org-scoped tools — it files issues, summarizes cycles, drafts standups, and catches duplicates before they spread."
           />
           <div className="mt-10 grid gap-7 sm:grid-cols-2">
             <FeatureBullet
               icon={MessagesSquare}
               title="Chat with context"
-              description="It knows your teams, cycles, and backlog — answers come from your data, not the void."
+              description="It knows your teams, cycles, and backlog — answers come from your data, not generic training."
             />
             <FeatureBullet
               icon={Workflow}

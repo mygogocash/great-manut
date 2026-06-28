@@ -16,16 +16,16 @@ export function Cta() {
       />
       <div className="mx-auto flex w-full max-w-6xl flex-col items-center px-6 py-24 text-center md:py-32">
         <h2 className="max-w-2xl text-4xl font-semibold tracking-tighter text-balance md:text-5xl">
-          Stop managing your tracker. Start shipping.
+          Your backlog deserves a tracker that moves as fast as you do
         </h2>
         <p className="mt-5 max-w-md text-base text-balance text-muted-foreground">
-          Set up your workspace in under a minute. Free for teams of three —
-          upgrade when the roadmap outgrows you.
+          Spin up a workspace in under a minute. Free for three teammates — no
+          credit card. Upgrade when you need the AI agent or higher limits.
         </p>
         <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row">
           <Button size="lg" className="h-10 px-5" asChild>
             <Link href={appUrl("/sign-up")}>
-              Get started for free
+              Start free
               <ArrowRight className="size-4" />
             </Link>
           </Button>
@@ -33,6 +33,9 @@ export function Cta() {
             <Link href="/pricing">Compare plans</Link>
           </Button>
         </div>
+        <p className="mt-4 text-xs text-muted-foreground">
+          No credit card · Free for 3 teammates
+        </p>
       </div>
     </section>
   );

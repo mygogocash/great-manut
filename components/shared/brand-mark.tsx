@@ -22,7 +22,7 @@ export function BrandMark({
     <>
       <Image
         src={LOGO}
-        alt=""
+        alt="Manut"
         width={size === "sm" ? 20 : 24}
         height={size === "sm" ? 20 : 24}
         className={cn(iconClass, "rounded object-cover")}

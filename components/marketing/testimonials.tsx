@@ -11,7 +11,7 @@ const TESTIMONIALS: {
 }[] = [
   {
     quote:
-      "We moved four thousand issues over a weekend and nobody asked how to use it on Monday. It’s that obvious.",
+      "We migrated four thousand issues over a weekend. Monday morning, nobody asked how to use the issue tracker — it just clicked.",
     name: "Mara Lindqvist",
     role: "VP Engineering",
     company: "Tidal",
@@ -19,7 +19,7 @@ const TESTIMONIALS: {
   },
   {
     quote:
-      "The cycle reports the agent writes are better than the ones I used to write. I checked. Twice.",
+      "The cycle reports our AI agent writes are sharper than the ones I used to draft by hand. I checked. Twice.",
     name: "Theo Park",
     role: "Engineering Lead",
     company: "Aperture",
@@ -27,7 +27,7 @@ const TESTIMONIALS: {
   },
   {
     quote:
-      "Manut is the first tracker our engineers don’t complain about. ⌘K does everything, and the board never lags.",
+      "First tracker our engineers didn't complain about. ⌘K does everything, the kanban board never lags, and cycles just work.",
     name: "Ada Okafor",
     role: "CTO",
     company: "Hexa Labs",

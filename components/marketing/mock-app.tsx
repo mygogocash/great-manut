@@ -21,7 +21,7 @@ import { MockFrame, MockWindowBar } from "@/components/marketing/mock-window";
 import { cn } from "@/lib/utils";
 
 /**
- * The hero product mock: a full Vector workspace window (sidebar + grouped
+ * The hero product mock: a full Manut workspace window (sidebar + grouped
  * issue list) built from the same primitives the real app uses.
  */
 export function MockApp({ className }: { className?: string }) {
