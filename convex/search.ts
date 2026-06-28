@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { Doc, Id } from "./_generated/dataModel";
 import { issueShape } from "./issues";
 import { orgQuery } from "./lib/customFunctions";
+import { projectStatusValidator } from "./schema";
 
 const RESULTS_PER_INDEX = 20;
 const MAX_RESULTS = 25;
@@ -84,6 +85,47 @@ export const issues = orgQuery({
       }
       if (team && team.orgId === ctx.org._id) {
         results.push({ ...issue, teamKey: team.key, teamName: team.name });
+      }
+    }
+    return results;
+  },
+});
+
+const MAX_PROJECT_RESULTS = 25;
+
+/** Filter projects by name or description (client-style org-scoped search). */
+export const projects = orgQuery({
+  args: { query: v.string() },
+  returns: v.array(
+    v.object({
+      projectId: v.id("projects"),
+      name: v.string(),
+      description: v.optional(v.string()),
+      status: projectStatusValidator,
+    })
+  ),
+  handler: async (ctx, args) => {
+    const text = args.query.trim().toLowerCase();
+    if (!text) {
+      return [];
+    }
+    const all = await ctx.db
+      .query("projects")
+      .withIndex("by_org", (q) => q.eq("orgId", ctx.org._id))
+      .collect();
+    const results = [];
+    for (const project of all) {
+      const haystack = `${project.name} ${project.description ?? ""}`.toLowerCase();
+      if (haystack.includes(text)) {
+        results.push({
+          projectId: project._id,
+          name: project.name,
+          description: project.description,
+          status: project.status,
+        });
+      }
+      if (results.length >= MAX_PROJECT_RESULTS) {
+        break;
       }
     }
     return results;

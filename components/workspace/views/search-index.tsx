@@ -1,12 +1,21 @@
 "use client";
 
 import { useQuery } from "convex/react";
-import { Loader2, Search, SearchX } from "lucide-react";
+import {
+  BookOpen,
+  FolderKanban,
+  Loader2,
+  Search,
+  SearchX,
+} from "lucide-react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
+import { PriorityIcon } from "@/components/shared/priority-icon";
+import { StatusIcon } from "@/components/shared/status-icon";
+import { ProjectStatusIcon } from "@/components/projects/project-status-icon";
 import {
   InputGroup,
   InputGroupAddon,
@@ -20,10 +29,58 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { PriorityIcon } from "@/components/shared/priority-icon";
-import { StatusIcon } from "@/components/shared/status-icon";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 
 const ALL_TEAMS = "all";
+const MIN_QUERY_LENGTH = 2;
+const DEBOUNCE_MS = 300;
+
+type SearchTab = "all" | "issues" | "docs" | "projects";
+
+type ProjectStatus =
+  | "backlog"
+  | "planned"
+  | "in_progress"
+  | "paused"
+  | "completed"
+  | "canceled";
+
+type SearchResultItem =
+  | {
+      kind: "issue";
+      id: string;
+      href: string;
+      title: string;
+      subtitle: string;
+      issue: {
+        priority: "none" | "urgent" | "high" | "medium" | "low";
+        status:
+          | "backlog"
+          | "todo"
+          | "in_progress"
+          | "in_review"
+          | "done"
+          | "canceled";
+        teamKey: string;
+        number: number;
+      };
+    }
+  | {
+      kind: "doc";
+      id: string;
+      href: string;
+      title: string;
+      subtitle: string;
+    }
+  | {
+      kind: "project";
+      id: string;
+      href: string;
+      title: string;
+      subtitle: string;
+      status: ProjectStatus;
+    };
 
 function useDebouncedValue<T>(value: T, delayMs: number): T {
   const [debounced, setDebounced] = useState(value);
@@ -34,17 +91,28 @@ function useDebouncedValue<T>(value: T, delayMs: number): T {
   return debounced;
 }
 
-/** Workspace-wide full-text issue search. */
+/** Workspace-wide unified search across issues, docs, and projects. */
 export function SearchIndexView() {
   const params = useParams<{ orgSlug: string }>();
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [teamFilter, setTeamFilter] = useState<string>(ALL_TEAMS);
-  const debouncedQuery = useDebouncedValue(query.trim(), 250);
+  const [tab, setTab] = useState<SearchTab>("all");
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const debouncedQuery = useDebouncedValue(query.trim(), DEBOUNCE_MS);
+  const searchActive = debouncedQuery.length >= MIN_QUERY_LENGTH;
+
+  const [prevResultKey, setPrevResultKey] = useState("");
+  const resultKey = `${debouncedQuery}:${tab}:${teamFilter}`;
+  if (resultKey !== prevResultKey) {
+    setPrevResultKey(resultKey);
+    setSelectedIndex(0);
+  }
 
   const teams = useQuery(api.teams.list);
-  const results = useQuery(
+  const issueResults = useQuery(
     api.search.issues,
-    debouncedQuery
+    searchActive && (tab === "all" || tab === "issues")
       ? {
           query: debouncedQuery,
           ...(teamFilter !== ALL_TEAMS
@@ -53,10 +121,113 @@ export function SearchIndexView() {
         }
       : "skip",
   );
+  const docResults = useQuery(
+    api.docs.search,
+    searchActive && (tab === "all" || tab === "docs")
+      ? { query: debouncedQuery }
+      : "skip",
+  );
+  const projectResultsQuery = useQuery(
+    api.search.projects,
+    searchActive && (tab === "all" || tab === "projects")
+      ? { query: debouncedQuery }
+      : "skip",
+  );
 
-  const searching = debouncedQuery.length > 0 && results === undefined;
+  const visibleResults = useMemo((): SearchResultItem[] => {
+    const base = `/${params.orgSlug}`;
+    const issues: SearchResultItem[] =
+      issueResults?.map((issue) => ({
+        kind: "issue",
+        id: issue._id,
+        href: `${base}/issue/${issue._id}`,
+        title: issue.title,
+        subtitle: `${issue.teamKey} · ${issue.teamName}`,
+        issue: {
+          priority: issue.priority,
+          status: issue.status,
+          teamKey: issue.teamKey,
+          number: issue.number,
+        },
+      })) ?? [];
+
+    const docs: SearchResultItem[] =
+      docResults?.map((doc) => ({
+        kind: "doc",
+        id: doc.pageId,
+        href: `${base}/docs/page/${doc.pageId}`,
+        title: doc.title,
+        subtitle: doc.spaceName,
+      })) ?? [];
+
+    const projects: SearchResultItem[] =
+      projectResultsQuery?.map((project) => ({
+        kind: "project",
+        id: project.projectId,
+        href: `${base}/projects/${project.projectId}`,
+        title: project.name,
+        subtitle:
+          project.description?.trim() ||
+          project.status.replaceAll("_", " "),
+        status: project.status,
+      })) ?? [];
+
+    switch (tab) {
+      case "issues":
+        return issues;
+      case "docs":
+        return docs;
+      case "projects":
+        return projects;
+      default:
+        return [...issues, ...docs, ...projects];
+    }
+  }, [docResults, issueResults, params.orgSlug, projectResultsQuery, tab]);
+
+  const effectiveIndex = Math.min(
+    selectedIndex,
+    Math.max(visibleResults.length - 1, 0),
+  );
+
+  const searching =
+    searchActive &&
+    (((tab === "all" || tab === "issues") && issueResults === undefined) ||
+      ((tab === "all" || tab === "docs") && docResults === undefined) ||
+      ((tab === "all" || tab === "projects") &&
+        projectResultsQuery === undefined));
   const waitingForDebounce =
-    query.trim().length > 0 && query.trim() !== debouncedQuery;
+    query.trim().length >= MIN_QUERY_LENGTH &&
+    query.trim() !== debouncedQuery;
+
+  const openResult = useCallback(
+    (item: SearchResultItem) => {
+      router.push(item.href);
+    },
+    [router],
+  );
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!visibleResults.length) {
+      return;
+    }
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setSelectedIndex((index) =>
+        Math.min(index + 1, visibleResults.length - 1),
+      );
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      setSelectedIndex((index) => Math.max(index - 1, 0));
+    } else if (event.key === "Enter") {
+      event.preventDefault();
+      const item = visibleResults[effectiveIndex];
+      if (item) {
+        openResult(item);
+      }
+    }
+  };
+
+  const showTeamFilter = tab === "all" || tab === "issues";
 
   return (
     <>
@@ -64,85 +235,105 @@ export function SearchIndexView() {
         <span className="text-sm font-medium">Search</span>
       </header>
       <div className="flex min-h-0 flex-1 flex-col">
-        <div className="mx-auto flex w-full max-w-2xl items-center gap-2 px-4 pt-6 pb-3">
-          <InputGroup className="h-9 flex-1">
-            <InputGroupAddon>
-              <Search className="size-4" />
-            </InputGroupAddon>
-            <InputGroupInput
-              autoFocus
-              placeholder="Search issues by title or description…"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-            />
-          </InputGroup>
-          <Select value={teamFilter} onValueChange={setTeamFilter}>
-            <SelectTrigger size="sm" className="w-36 gap-1.5">
-              <SelectValue placeholder="All teams" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={ALL_TEAMS}>All teams</SelectItem>
-              {teams?.map((team) => (
-                <SelectItem key={team._id} value={team._id}>
-                  {team.key} · {team.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="mx-auto flex w-full max-w-2xl flex-col gap-3 px-4 pt-6 pb-3">
+          <div className="flex items-center gap-2">
+            <InputGroup className="h-9 flex-1">
+              <InputGroupAddon>
+                <Search className="size-4" />
+              </InputGroupAddon>
+              <InputGroupInput
+                autoFocus
+                placeholder="Search issues, docs, and projects…"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                onKeyDown={handleKeyDown}
+              />
+            </InputGroup>
+            {showTeamFilter ? (
+              <Select value={teamFilter} onValueChange={setTeamFilter}>
+                <SelectTrigger size="sm" className="w-36 gap-1.5">
+                  <SelectValue placeholder="All teams" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={ALL_TEAMS}>All teams</SelectItem>
+                  {teams?.map((team) => (
+                    <SelectItem key={team._id} value={team._id}>
+                      {team.key} · {team.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : null}
+          </div>
+          <Tabs
+            value={tab}
+            onValueChange={(value) => setTab(value as SearchTab)}
+          >
+            <TabsList className="h-7">
+              <TabsTrigger value="all" className="h-6 px-2 text-xs">
+                All
+              </TabsTrigger>
+              <TabsTrigger value="issues" className="h-6 px-2 text-xs">
+                Issues
+              </TabsTrigger>
+              <TabsTrigger value="docs" className="h-6 px-2 text-xs">
+                Docs
+              </TabsTrigger>
+              <TabsTrigger value="projects" className="h-6 px-2 text-xs">
+                Projects
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
 
         <ScrollArea className="flex-1">
           <div className="mx-auto w-full max-w-2xl px-4 pb-8">
-            {debouncedQuery.length === 0 ? (
+            {debouncedQuery.length < MIN_QUERY_LENGTH ? (
               <div className="flex flex-col items-center gap-2 py-24 text-center">
                 <Search className="size-6 text-muted-foreground/50" />
                 <p className="text-sm text-muted-foreground">
-                  Search issues across your workspace.
+                  Search across issues, documentation, and projects.
                 </p>
                 <p className="text-xs text-muted-foreground/70">
-                  Tip: press{" "}
+                  Type at least {MIN_QUERY_LENGTH} characters. Use{" "}
                   <kbd className="rounded border bg-muted px-1 font-mono text-[10px]">
-                    /
+                    ↑
                   </kbd>{" "}
-                  anywhere to get here.
+                  <kbd className="rounded border bg-muted px-1 font-mono text-[10px]">
+                    ↓
+                  </kbd>{" "}
+                  to navigate,{" "}
+                  <kbd className="rounded border bg-muted px-1 font-mono text-[10px]">
+                    Enter
+                  </kbd>{" "}
+                  to open.
                 </p>
               </div>
             ) : searching || waitingForDebounce ? (
               <div className="flex items-center justify-center py-24">
                 <Loader2 className="size-4 animate-spin text-muted-foreground" />
               </div>
-            ) : results && results.length === 0 ? (
+            ) : visibleResults.length === 0 ? (
               <div className="flex flex-col items-center gap-2 py-24 text-center">
                 <SearchX className="size-6 text-muted-foreground/50" />
                 <p className="text-sm text-muted-foreground">
-                  No issues found for “{debouncedQuery}”.
+                  No results for “{debouncedQuery}”.
                 </p>
               </div>
             ) : (
               <div className="flex flex-col">
                 <p className="px-1 pb-2 text-xs text-muted-foreground">
-                  {results?.length}{" "}
-                  {results?.length === 1 ? "result" : "results"}
+                  {visibleResults.length}{" "}
+                  {visibleResults.length === 1 ? "result" : "results"}
                 </p>
-                {results?.map((issue) => (
-                  <Link
-                    key={issue._id}
-                    href={`/${params.orgSlug}/issue/${issue._id}`}
-                    prefetch={false}
-                    className="group flex h-10 items-center gap-3 border-b px-2 text-sm transition-colors hover:bg-accent/50"
-                  >
-                    <PriorityIcon priority={issue.priority} />
-                    <span className="w-16 shrink-0 font-mono text-xs text-muted-foreground">
-                      {issue.teamKey}-{issue.number}
-                    </span>
-                    <StatusIcon status={issue.status} />
-                    <span className="min-w-0 flex-1 truncate font-medium">
-                      {issue.title}
-                    </span>
-                    <span className="hidden shrink-0 text-xs text-muted-foreground sm:block">
-                      {issue.teamName}
-                    </span>
-                  </Link>
+                {visibleResults.map((item, index) => (
+                  <SearchResultRow
+                    key={`${item.kind}-${item.id}`}
+                    item={item}
+                    selected={index === effectiveIndex}
+                    onMouseEnter={() => setSelectedIndex(index)}
+                    onNavigate={() => openResult(item)}
+                  />
                 ))}
               </div>
             )}
@@ -150,5 +341,54 @@ export function SearchIndexView() {
         </ScrollArea>
       </div>
     </>
+  );
+}
+
+function SearchResultRow({
+  item,
+  selected,
+  onMouseEnter,
+  onNavigate,
+}: {
+  item: SearchResultItem;
+  selected: boolean;
+  onMouseEnter: () => void;
+  onNavigate: () => void;
+}) {
+  return (
+    <Link
+      href={item.href}
+      prefetch={false}
+      onMouseEnter={onMouseEnter}
+      onClick={(event) => {
+        event.preventDefault();
+        onNavigate();
+      }}
+      className={cn(
+        "group flex h-10 items-center gap-3 border-b px-2 text-sm transition-colors hover:bg-accent/50",
+        selected && "bg-accent/50",
+      )}
+    >
+      {item.kind === "issue" ? (
+        <>
+          <PriorityIcon priority={item.issue.priority} />
+          <span className="w-16 shrink-0 font-mono text-xs text-muted-foreground">
+            {item.issue.teamKey}-{item.issue.number}
+          </span>
+          <StatusIcon status={item.issue.status} />
+        </>
+      ) : item.kind === "doc" ? (
+        <BookOpen className="size-4 shrink-0 text-muted-foreground" />
+      ) : (
+        <>
+          <FolderKanban className="size-4 shrink-0 text-muted-foreground" />
+          <ProjectStatusIcon status={item.status} />
+        </>
+      )}
+      <span className="min-w-0 flex-1 truncate font-medium">{item.title}</span>
+      <span className="hidden shrink-0 text-xs text-muted-foreground sm:block">
+        {item.subtitle}
+      </span>
+    </Link>
   );
 }

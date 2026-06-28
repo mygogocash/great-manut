@@ -344,11 +344,148 @@ const standupReport = createTool({
   },
 });
 
+type DocSearchHit = {
+  pageId: Id<"docPages">;
+  title: string;
+  spaceName: string;
+  snippet: string | null;
+};
+
+const searchDocs = createTool({
+  description:
+    "Full-text search documentation pages in this workspace. Returns page id, title, space name, and a body snippet.",
+  inputSchema: jsonSchema<{ query: string }>({
+    type: "object",
+    properties: {
+      query: {
+        type: "string",
+        description: "Search terms for doc page titles and bodies",
+      },
+    },
+    required: ["query"],
+    additionalProperties: false,
+  }),
+  execute: async (ctx: VectorToolCtx, input): Promise<DocSearchHit[]> => {
+    return await ctx.runQuery(internal.agent.data.searchDocsForOrg, {
+      orgId: ctx.orgId,
+      query: input.query,
+    });
+  },
+});
+
+type DocPageDetail = {
+  pageId: Id<"docPages">;
+  title: string;
+  body: string;
+  spaceId: Id<"docSpaces">;
+  spaceName: string;
+  path: string;
+};
+
+const getPage = createTool({
+  description:
+    "Fetch a documentation page by id (from searchDocs). Returns title, markdown body, space name, and a workspace path.",
+  inputSchema: jsonSchema<{ pageId: string }>({
+    type: "object",
+    properties: {
+      pageId: {
+        type: "string",
+        description: "Doc page id returned by searchDocs",
+      },
+    },
+    required: ["pageId"],
+    additionalProperties: false,
+  }),
+  execute: async (ctx: VectorToolCtx, input): Promise<DocPageDetail> => {
+    return await ctx.runQuery(internal.agent.data.getPageForOrg, {
+      orgId: ctx.orgId,
+      pageId: input.pageId as Id<"docPages">,
+    });
+  },
+});
+
+const createPage = createTool({
+  description:
+    "Create a new documentation page in a space by name. Optionally set the initial markdown body.",
+  inputSchema: jsonSchema<{
+    spaceName: string;
+    title: string;
+    body?: string;
+  }>({
+    type: "object",
+    properties: {
+      spaceName: {
+        type: "string",
+        description: "Exact name of the doc space, e.g. Engineering",
+      },
+      title: { type: "string", description: "Page title" },
+      body: {
+        type: "string",
+        description: "Optional markdown body for the new page",
+      },
+    },
+    required: ["spaceName", "title"],
+    additionalProperties: false,
+  }),
+  execute: async (
+    ctx: VectorToolCtx,
+    input
+  ): Promise<{
+    pageId: Id<"docPages">;
+    title: string;
+    spaceName: string;
+    path: string;
+  }> => {
+    return await ctx.runMutation(internal.agent.data.createPageForAgent, {
+      orgId: ctx.orgId,
+      actorUserId: ctx.requestUserId,
+      spaceName: input.spaceName,
+      title: input.title,
+      body: input.body,
+    });
+  },
+});
+
+const linkIssueToPage = createTool({
+  description:
+    "Link an issue to a documentation page via docPageIssueLinks (idempotent — duplicate links are ignored).",
+  inputSchema: jsonSchema<{ pageId: string; identifier: string }>({
+    type: "object",
+    properties: {
+      pageId: {
+        type: "string",
+        description: "Doc page id from searchDocs or createPage",
+      },
+      identifier: {
+        type: "string",
+        description: "Issue identifier like ENG-42",
+      },
+    },
+    required: ["pageId", "identifier"],
+    additionalProperties: false,
+  }),
+  execute: async (
+    ctx: VectorToolCtx,
+    input
+  ): Promise<{ pageId: Id<"docPages">; identifier: string; linked: boolean }> => {
+    return await ctx.runMutation(internal.agent.data.linkIssueToPageForAgent, {
+      orgId: ctx.orgId,
+      actorUserId: ctx.requestUserId,
+      pageId: input.pageId as Id<"docPages">,
+      identifier: input.identifier,
+    });
+  },
+});
+
 export const vectorTools = {
   listTeams,
   listMembers,
   projectStatus,
   searchIssues,
+  searchDocs,
+  getPage,
+  createPage,
+  linkIssueToPage,
   findSimilarIssues,
   createIssue,
   updateIssue,
