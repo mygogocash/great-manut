@@ -26,9 +26,9 @@ export function Hero() {
         >
           <span className="flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-medium text-primary-foreground">
             <Sparkles className="size-2.5" />
-            New
+            Suite
           </span>
-          AI agent on Pro — see what it can do
+          Plan · Knowledge · Service · AI — see pricing
           <ArrowRight className="size-3 transition-transform group-hover:translate-x-0.5" />
         </Link>
 
@@ -36,7 +36,7 @@ export function Hero() {
           id="hero-headline"
           className="mt-8 max-w-3xl text-5xl font-semibold tracking-tighter text-balance md:text-7xl"
         >
-          Ship faster with an issue tracker that keeps up
+          Ship faster with a suite that keeps up
         </h1>
         <p className="mt-6 max-w-xl text-base text-balance text-muted-foreground md:text-lg">
           {HERO_LEDE}

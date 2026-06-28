@@ -5,11 +5,17 @@ import { Id } from "@/convex/_generated/dataModel";
 import { AiAgentPage } from "@/components/ai/ai-agent-page";
 import { parseWorkspaceRoute } from "@/lib/workspace-routes";
 import { CyclesIndexView } from "./views/cycles-index";
+import { DiscoveryIndexView } from "./views/discovery-index";
 import { ProjectsIndexView } from "./views/projects-index";
 import { SearchIndexView } from "./views/search-index";
+import { ServiceIndexView } from "./views/service-index";
+import { ServiceRequestView } from "./views/service-request";
 import { TeamBoardView } from "./views/team-board";
 import { TeamIssuesView } from "./views/team-issues";
 import { WorkspaceHomeView } from "./views/workspace-home";
+import { DocsIndexView } from "./views/docs-index-view";
+import { DocsSpaceView } from "./views/docs-space-view";
+import { DocsPageView } from "./views/docs-page-view";
 
 /**
  * Single client router for all sidebar workspace routes.
@@ -32,6 +38,22 @@ export function WorkspaceRouteView() {
       return <AiAgentPage />;
     case "search":
       return <SearchIndexView />;
+    case "discovery":
+      return <DiscoveryIndexView />;
+    case "service":
+      return <ServiceIndexView />;
+    case "service-request":
+      return (
+        <ServiceRequestView
+          requestId={route.requestId as Id<"serviceRequests">}
+        />
+      );
+    case "docs":
+      return <DocsIndexView />;
+    case "docs-space":
+      return <DocsSpaceView spaceId={route.spaceId} />;
+    case "docs-page":
+      return <DocsPageView pageId={route.pageId} />;
     case "team":
       return <TeamIssuesView teamId={route.teamId as Id<"teams">} />;
     case "team-board":

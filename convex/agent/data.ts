@@ -839,3 +839,313 @@ export const standupForOrg = internalQuery({
     return { sinceHours: args.sinceHours, entries };
   },
 });
+
+// ── Docs (Track H — agent cross-suite tools) ───────────────────────────────
+
+const DOC_SEARCH_LIMIT = 12;
+const SNIPPET_LENGTH = 200;
+
+function docBodySnippet(body: string): string {
+  const trimmed = body.replace(/\s+/g, " ").trim();
+  if (trimmed.length <= SNIPPET_LENGTH) {
+    return trimmed;
+  }
+  return trimmed.slice(0, SNIPPET_LENGTH);
+}
+
+export const docSearchResultValidator = v.object({
+  pageId: v.id("docPages"),
+  title: v.string(),
+  spaceName: v.string(),
+  snippet: v.union(v.string(), v.null()),
+});
+
+export const searchDocsForOrg = internalQuery({
+  args: {
+    orgId: v.id("organizations"),
+    query: v.string(),
+  },
+  returns: v.array(docSearchResultValidator),
+  handler: async (ctx, args) => {
+    const text = args.query.trim();
+    if (!text) {
+      return [];
+    }
+
+    const titleMatches = await ctx.db
+      .query("docPages")
+      .withSearchIndex("search_title", (q) =>
+        q.search("title", text).eq("orgId", args.orgId)
+      )
+      .take(DOC_SEARCH_LIMIT);
+
+    const bodyMatches = await ctx.db
+      .query("docPages")
+      .withSearchIndex("search_body", (q) =>
+        q.search("bodySnippet", text).eq("orgId", args.orgId)
+      )
+      .take(DOC_SEARCH_LIMIT);
+
+    const seen = new Set<Id<"docPages">>();
+    const merged: Doc<"docPages">[] = [];
+    for (const page of [...titleMatches, ...bodyMatches]) {
+      if (page.archivedAt) {
+        continue;
+      }
+      if (!seen.has(page._id)) {
+        seen.add(page._id);
+        merged.push(page);
+      }
+      if (merged.length >= DOC_SEARCH_LIMIT) {
+        break;
+      }
+    }
+
+    const results = [];
+    for (const page of merged) {
+      const space = await ctx.db.get(page.spaceId);
+      if (!space || space.orgId !== args.orgId || space.archivedAt) {
+        continue;
+      }
+      results.push({
+        pageId: page._id,
+        title: page.title,
+        spaceName: space.name,
+        snippet: page.bodySnippet ?? null,
+      });
+    }
+    return results;
+  },
+});
+
+export const getPageForOrg = internalQuery({
+  args: {
+    orgId: v.id("organizations"),
+    pageId: v.id("docPages"),
+  },
+  returns: v.object({
+    pageId: v.id("docPages"),
+    title: v.string(),
+    body: v.string(),
+    spaceId: v.id("docSpaces"),
+    spaceName: v.string(),
+    path: v.string(),
+  }),
+  handler: async (ctx, args) => {
+    const page = await ctx.db.get(args.pageId);
+    if (!page || page.orgId !== args.orgId) {
+      throw new Error(
+        "Page not found in this workspace. Use searchDocs to find valid page ids."
+      );
+    }
+    const space = await ctx.db.get(page.spaceId);
+    if (!space || space.orgId !== args.orgId) {
+      throw new Error("Doc space not found");
+    }
+    let body = "";
+    if (page.currentRevisionId) {
+      const revision = await ctx.db.get(page.currentRevisionId);
+      if (revision && revision.orgId === args.orgId) {
+        body = revision.body;
+      }
+    }
+    return {
+      pageId: page._id,
+      title: page.title,
+      body,
+      spaceId: space._id,
+      spaceName: space.name,
+      path: `/docs/page/${page._id}`,
+    };
+  },
+});
+
+async function resolveSpaceByName(
+  ctx: QueryCtx | MutationCtx,
+  orgId: Id<"organizations">,
+  spaceName: string
+): Promise<Doc<"docSpaces">> {
+  const normalized = spaceName.trim().toLowerCase();
+  const spaces = await ctx.db
+    .query("docSpaces")
+    .withIndex("by_org", (q) => q.eq("orgId", orgId))
+    .collect();
+  const match = spaces.find(
+    (space) =>
+      !space.archivedAt && space.name.trim().toLowerCase() === normalized
+  );
+  if (!match) {
+    throw new Error(
+      `No doc space named "${spaceName}" in this workspace. Ask the user which space to use.`
+    );
+  }
+  return match;
+}
+
+export const createPageForAgent = internalMutation({
+  args: {
+    orgId: v.id("organizations"),
+    actorUserId: v.id("users"),
+    spaceName: v.string(),
+    title: v.string(),
+    body: v.optional(v.string()),
+  },
+  returns: v.object({
+    pageId: v.id("docPages"),
+    title: v.string(),
+    spaceName: v.string(),
+    path: v.string(),
+  }),
+  handler: async (ctx, args) => {
+    const membership = await ctx.db
+      .query("members")
+      .withIndex("by_org_and_user", (q) =>
+        q.eq("orgId", args.orgId).eq("userId", args.actorUserId)
+      )
+      .unique();
+    if (!membership) {
+      throw new Error("Not a member of this organization");
+    }
+
+    const space = await resolveSpaceByName(ctx, args.orgId, args.spaceName);
+    const title = args.title.trim();
+    if (!title) {
+      throw new Error("Page title is required");
+    }
+
+    const siblings = await ctx.db
+      .query("docPages")
+      .withIndex("by_space", (q) => q.eq("spaceId", space._id))
+      .collect();
+    const maxSort = siblings
+      .filter((p) => !p.parentPageId && !p.archivedAt)
+      .reduce((max, p) => Math.max(max, p.sortOrder), 0);
+
+    const baseSlug = title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")
+      .slice(0, 48) || "page";
+    let slug = baseSlug;
+    let suffix = 0;
+    while (true) {
+      const existing = await ctx.db
+        .query("docPages")
+        .withIndex("by_space_and_slug", (q) =>
+          q.eq("spaceId", space._id).eq("slug", slug)
+        )
+        .unique();
+      if (!existing) {
+        break;
+      }
+      suffix += 1;
+      slug = `${baseSlug}-${suffix}`;
+    }
+
+    const now = Date.now();
+    const body = args.body ?? "";
+    const pageId = await ctx.db.insert("docPages", {
+      orgId: args.orgId,
+      spaceId: space._id,
+      title,
+      slug,
+      sortOrder: maxSort + 1000,
+      createdBy: args.actorUserId,
+      updatedAt: now,
+      bodySnippet: body ? docBodySnippet(body) : undefined,
+    });
+
+    const revisionId = await ctx.db.insert("docPageRevisions", {
+      orgId: args.orgId,
+      pageId,
+      body,
+      editorId: args.actorUserId,
+      createdAt: now,
+      changeSummary: "Created by AI agent",
+    });
+    await ctx.db.patch(pageId, { currentRevisionId: revisionId });
+
+    return {
+      pageId,
+      title,
+      spaceName: space.name,
+      path: `/docs/page/${pageId}`,
+    };
+  },
+});
+
+export const linkIssueToPageForAgent = internalMutation({
+  args: {
+    orgId: v.id("organizations"),
+    actorUserId: v.id("users"),
+    pageId: v.id("docPages"),
+    identifier: v.string(),
+  },
+  returns: v.object({
+    pageId: v.id("docPages"),
+    identifier: v.string(),
+    linked: v.boolean(),
+  }),
+  handler: async (ctx, args) => {
+    const membership = await ctx.db
+      .query("members")
+      .withIndex("by_org_and_user", (q) =>
+        q.eq("orgId", args.orgId).eq("userId", args.actorUserId)
+      )
+      .unique();
+    if (!membership) {
+      throw new Error("Not a member of this organization");
+    }
+
+    const page = await ctx.db.get(args.pageId);
+    if (!page || page.orgId !== args.orgId) {
+      throw new Error(
+        "Page not found in this workspace. Use searchDocs to find valid page ids."
+      );
+    }
+
+    const match = args.identifier
+      .trim()
+      .match(/^([A-Za-z][A-Za-z0-9]{0,4})-(\d+)$/);
+    if (!match) {
+      throw new Error(
+        `"${args.identifier}" is not a valid issue identifier. Use the form KEY-number, e.g. ENG-42.`
+      );
+    }
+
+    const team = await getOrgTeamByKey(ctx, args.orgId, match[1]);
+    const issue = await ctx.db
+      .query("issues")
+      .withIndex("by_team_and_number", (q) =>
+        q.eq("teamId", team._id).eq("number", Number(match[2]))
+      )
+      .unique();
+    if (!issue || issue.orgId !== args.orgId) {
+      throw new Error(`Issue ${team.key}-${match[2]} not found`);
+    }
+
+    const existing = await ctx.db
+      .query("docPageIssueLinks")
+      .withIndex("by_page", (q) => q.eq("pageId", page._id))
+      .collect();
+    if (existing.some((link) => link.issueId === issue._id)) {
+      return {
+        pageId: page._id,
+        identifier: `${team.key}-${issue.number}`,
+        linked: false,
+      };
+    }
+
+    await ctx.db.insert("docPageIssueLinks", {
+      orgId: args.orgId,
+      pageId: page._id,
+      issueId: issue._id,
+    });
+
+    return {
+      pageId: page._id,
+      identifier: `${team.key}-${issue.number}`,
+      linked: true,
+    };
+  },
+});

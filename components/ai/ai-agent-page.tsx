@@ -18,10 +18,9 @@ import { captureEvent } from "@/lib/posthog/client";
 import { PostHogEvents } from "@/lib/posthog/events";
 
 const SUGGESTIONS = [
-  "What should I work on next?",
-  "Write a standup report for the last 24 hours",
-  "Summarize the current cycle",
-  "Find issues that look like duplicates",
+  "Summarize open urgent issues and related docs",
+  "Draft standup from my team's cycle",
+  "Find duplicate requests and issues",
 ];
 
 export function AiAgentPage() {
@@ -159,8 +158,8 @@ function EmptyState({
         <div className="flex flex-col gap-1">
           <h2 className="text-base font-semibold">Ask Manut</h2>
           <p className="text-sm text-muted-foreground">
-            Manut knows your teams, issues, projects and cycles — and can
-            create or update issues for you.
+            Manut knows your teams, issues, projects, cycles, and docs — and can
+            create or update issues and documentation for you.
           </p>
         </div>
         <div className="flex w-full flex-col gap-1.5">

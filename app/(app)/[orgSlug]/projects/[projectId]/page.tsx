@@ -1,16 +1,18 @@
 "use client";
 
 import { useMutation, useQuery } from "convex/react";
-import { ChevronRight, Loader2 } from "lucide-react";
+import { ChevronRight, GanttChart, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { api } from "@/convex/_generated/api";
 import { Doc, Id } from "@/convex/_generated/dataModel";
+import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AddIssuesPopover } from "@/components/projects/add-issues-popover";
 import { GroupedIssueList } from "@/components/projects/grouped-issue-list";
 import {
@@ -20,6 +22,7 @@ import {
 } from "@/components/projects/project-meta";
 import { ProjectProperties } from "@/components/projects/project-properties";
 import { IssueProgressBar } from "@/components/projects/progress-bar";
+import { ProjectEpicsPanel } from "@/components/roadmaps/project-epics-panel";
 
 /** Project detail — Track B. Progress, issues across teams, and properties. */
 export default function ProjectDetailPage() {
@@ -108,6 +111,7 @@ function ProjectDetail({
   };
 
   const progress = progressFromIssues(issues ?? []);
+  const [tab, setTab] = useState<"overview" | "epics">("overview");
 
   return (
     <>
@@ -126,15 +130,40 @@ function ProjectDetail({
           />
           <span className="truncate font-medium">{project.name}</span>
         </div>
-        <AddIssuesPopover
-          candidates={candidates}
-          teamKeyFor={teamKeyFor}
-          onAdd={addIssue}
-          emptyText="Every issue is already in this project."
-        />
+        <div className="flex items-center gap-2">
+          <Button size="sm" variant="ghost" asChild>
+            <Link href={`/${orgSlug}/projects/${project._id}/roadmap`}>
+              <GanttChart className="size-4" />
+              Roadmap
+            </Link>
+          </Button>
+          <AddIssuesPopover
+            candidates={candidates}
+            teamKeyFor={teamKeyFor}
+            onAdd={addIssue}
+            emptyText="Every issue is already in this project."
+          />
+        </div>
       </header>
 
-      <div className="flex min-h-0 flex-1">
+      <Tabs
+        value={tab}
+        onValueChange={(v) => setTab(v as "overview" | "epics")}
+        className="flex min-h-0 flex-1 flex-col"
+      >
+        <div className="border-b px-4">
+          <TabsList variant="line" className="h-9 bg-transparent">
+            <TabsTrigger value="overview" className="text-xs">
+              Overview
+            </TabsTrigger>
+            <TabsTrigger value="epics" className="text-xs">
+              Epics
+            </TabsTrigger>
+          </TabsList>
+        </div>
+
+        <TabsContent value="overview" className="mt-0 flex min-h-0 flex-1">
+          <div className="flex min-h-0 flex-1">
         <ScrollArea className="flex-1">
           <div className="mx-auto flex max-w-3xl flex-col gap-4 px-8 pt-8 pb-4">
             <Textarea
@@ -221,6 +250,12 @@ function ProjectDetail({
           <ProjectProperties project={project} />
         </aside>
       </div>
+        </TabsContent>
+
+        <TabsContent value="epics" className="mt-0 flex min-h-0 flex-1 flex-col">
+          <ProjectEpicsPanel project={project} />
+        </TabsContent>
+      </Tabs>
     </>
   );
 }

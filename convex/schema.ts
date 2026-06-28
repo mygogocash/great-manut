@@ -50,6 +50,34 @@ export const issueRelationTypeValidator = v.union(
   v.literal("duplicate_of")
 );
 
+/** Doc page lifecycle — archived pages keep `archivedAt` set. */
+export const docPageStatusValidator = v.union(
+  v.literal("active"),
+  v.literal("archived")
+);
+
+export const ideaStatusValidator = v.union(
+  v.literal("new"),
+  v.literal("shortlisted"),
+  v.literal("planned"),
+  v.literal("shipped"),
+  v.literal("dropped")
+);
+
+export const serviceRequestStatusValidator = v.union(
+  v.literal("new"),
+  v.literal("waiting"),
+  v.literal("in_progress"),
+  v.literal("resolved"),
+  v.literal("closed")
+);
+
+export const epicStatusValidator = v.union(
+  v.literal("backlog"),
+  v.literal("in_progress"),
+  v.literal("completed")
+);
+
 export default defineSchema({
   ...authTables,
   users: defineTable({
@@ -126,6 +154,7 @@ export default defineSchema({
     projectId: v.optional(v.id("projects")),
     cycleId: v.optional(v.id("cycles")),
     parentIssueId: v.optional(v.id("issues")),
+    epicId: v.optional(v.id("epics")),
     estimate: v.optional(v.number()),
     /** Due date as ms since epoch */
     dueDate: v.optional(v.number()),
@@ -142,6 +171,7 @@ export default defineSchema({
     .index("by_project", ["projectId"])
     .index("by_cycle", ["cycleId"])
     .index("by_parent", ["parentIssueId"])
+    .index("by_epic", ["epicId"])
     .searchIndex("search_title", {
       searchField: "title",
       filterFields: ["orgId", "teamId"],
@@ -185,6 +215,7 @@ export default defineSchema({
     body: v.string(),
     /** User ids @mentioned in the body */
     mentions: v.optional(v.array(v.id("users"))),
+    isAutomation: v.optional(v.boolean()),
   }).index("by_issue", ["issueId"]),
 
   activity: defineTable({
@@ -243,4 +274,160 @@ export default defineSchema({
   })
     .index("by_org", ["orgId"])
     .index("by_creator", ["creatorId"]),
+
+  // ── Docs / Wiki (Track G) ────────────────────────────────────────────────
+  docSpaces: defineTable({
+    orgId: v.id("organizations"),
+    name: v.string(),
+    slug: v.string(),
+    description: v.optional(v.string()),
+    teamId: v.optional(v.id("teams")),
+    icon: v.optional(v.string()),
+    createdBy: v.id("users"),
+    createdAt: v.number(),
+    archivedAt: v.optional(v.number()),
+  })
+    .index("by_org", ["orgId"])
+    .index("by_org_and_slug", ["orgId", "slug"]),
+
+  docPages: defineTable({
+    orgId: v.id("organizations"),
+    spaceId: v.id("docSpaces"),
+    parentPageId: v.optional(v.id("docPages")),
+    title: v.string(),
+    slug: v.string(),
+    sortOrder: v.number(),
+    currentRevisionId: v.optional(v.id("docPageRevisions")),
+    createdBy: v.id("users"),
+    updatedAt: v.number(),
+    archivedAt: v.optional(v.number()),
+    /** Denormalized body snippet for search + previews */
+    bodySnippet: v.optional(v.string()),
+  })
+    .index("by_org", ["orgId"])
+    .index("by_space", ["spaceId"])
+    .index("by_space_and_slug", ["spaceId", "slug"])
+    .index("by_parent", ["parentPageId"])
+    .searchIndex("search_title", {
+      searchField: "title",
+      filterFields: ["orgId", "spaceId"],
+    })
+    .searchIndex("search_body", {
+      searchField: "bodySnippet",
+      filterFields: ["orgId", "spaceId"],
+    }),
+
+  docPageRevisions: defineTable({
+    orgId: v.id("organizations"),
+    pageId: v.id("docPages"),
+    body: v.string(),
+    editorId: v.id("users"),
+    createdAt: v.number(),
+    changeSummary: v.optional(v.string()),
+  }).index("by_page", ["pageId"]),
+
+  docComments: defineTable({
+    orgId: v.id("organizations"),
+    pageId: v.id("docPages"),
+    authorId: v.id("users"),
+    body: v.string(),
+    mentions: v.optional(v.array(v.id("users"))),
+    createdAt: v.number(),
+  }).index("by_page", ["pageId"]),
+
+  docPageIssueLinks: defineTable({
+    orgId: v.id("organizations"),
+    pageId: v.id("docPages"),
+    issueId: v.id("issues"),
+  })
+    .index("by_page", ["pageId"])
+    .index("by_issue", ["issueId"])
+    .index("by_org_and_issue", ["orgId", "issueId"]),
+
+  // ── Product discovery (Track I) ──────────────────────────────────────────
+  ideas: defineTable({
+    orgId: v.id("organizations"),
+    title: v.string(),
+    description: v.optional(v.string()),
+    status: ideaStatusValidator,
+    impact: v.number(),
+    effort: v.number(),
+    ownerId: v.optional(v.id("users")),
+    projectId: v.optional(v.id("projects")),
+    teamId: v.optional(v.id("teams")),
+    promotedIssueId: v.optional(v.id("issues")),
+    createdBy: v.id("users"),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_org", ["orgId"])
+    .index("by_org_and_status", ["orgId", "status"])
+    .index("by_project", ["projectId"])
+    .index("by_promoted_issue", ["promotedIssueId"]),
+
+  // ── Service desk (Track J) ───────────────────────────────────────────────
+  requestTypes: defineTable({
+    orgId: v.id("organizations"),
+    name: v.string(),
+    description: v.optional(v.string()),
+    /** JSON array of field definitions (text, textarea, select) */
+    fields: v.string(),
+    slaHours: v.optional(v.number()),
+  }).index("by_org", ["orgId"]),
+
+  serviceRequests: defineTable({
+    orgId: v.id("organizations"),
+    requestTypeId: v.id("requestTypes"),
+    number: v.number(),
+    title: v.string(),
+    description: v.string(),
+    status: serviceRequestStatusValidator,
+    requesterEmail: v.string(),
+    requesterName: v.optional(v.string()),
+    assigneeId: v.optional(v.id("users")),
+    linkedIssueId: v.optional(v.id("issues")),
+    createdAt: v.number(),
+    dueAt: v.optional(v.number()),
+    resolvedAt: v.optional(v.number()),
+  })
+    .index("by_org", ["orgId"])
+    .index("by_org_and_number", ["orgId", "number"])
+    .index("by_org_and_status", ["orgId", "status"])
+    .index("by_assignee", ["orgId", "assigneeId"]),
+
+  serviceRequestEvents: defineTable({
+    orgId: v.id("organizations"),
+    requestId: v.id("serviceRequests"),
+    type: v.string(),
+    actorId: v.optional(v.id("users")),
+    oldValue: v.optional(v.string()),
+    newValue: v.optional(v.string()),
+    createdAt: v.number(),
+  }).index("by_request", ["requestId"]),
+
+  // ── Roadmaps / epics (Track K) ───────────────────────────────────────────
+  epics: defineTable({
+    orgId: v.id("organizations"),
+    projectId: v.id("projects"),
+    title: v.string(),
+    description: v.optional(v.string()),
+    status: epicStatusValidator,
+    startDate: v.optional(v.number()),
+    targetDate: v.optional(v.number()),
+    color: v.optional(v.string()),
+  })
+    .index("by_org", ["orgId"])
+    .index("by_project", ["projectId"]),
+
+  // ── Automations (Track L) ──────────────────────────────────────────────────
+  automationRules: defineTable({
+    orgId: v.id("organizations"),
+    name: v.string(),
+    enabled: v.boolean(),
+    trigger: v.string(),
+    conditions: v.optional(v.string()),
+    actions: v.string(),
+    createdBy: v.id("users"),
+    createdAt: v.number(),
+  }).index("by_org", ["orgId"]),
 });

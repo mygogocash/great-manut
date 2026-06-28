@@ -3,6 +3,7 @@ import { Cta } from "@/components/marketing/cta";
 import { Faq } from "@/components/marketing/faq";
 import { FeatureGrid } from "@/components/marketing/feature-grid";
 import { FeaturesAi } from "@/components/marketing/features-ai";
+import { FeaturesSuite } from "@/components/marketing/features-suite";
 import { FeaturesIssues } from "@/components/marketing/features-issues";
 import { FeaturesKeyboard } from "@/components/marketing/features-keyboard";
 import { Footer } from "@/components/marketing/footer";
@@ -20,13 +21,13 @@ const FeaturesBoard = dynamic(() =>
 );
 
 export const metadata = buildPageMetadata({
-  title: "Manut — The issue tracker built for speed",
+  title: "Manut — Plan, Knowledge, Service, and AI in one workspace",
   description:
-    "Manut is an issue tracker for product teams — issues, kanban boards, cycles, and an AI agent in one keyboard-first workspace. Free for 3 teammates. No credit card.",
+    "Manut is a teamwork suite for product teams — issues and cycles (Plan), docs and discovery (Knowledge), service desk (Service), and a workspace AI agent. Free for 3 teammates. No credit card.",
   path: "/",
-  openGraphTitle: "Manut — Issue tracker built for speed",
+  openGraphTitle: "Manut — The teamwork suite built for speed",
   openGraphDescription:
-    "Plan, track, and ship with issues, kanban boards, and cycles. AI agent on Pro. Start free — no credit card.",
+    "Plan delivery, capture knowledge, run service desk, and ask AI — one keyboard-first workspace. Start free.",
 });
 
 export default function LandingPage() {
@@ -36,6 +37,7 @@ export default function LandingPage() {
       <main>
         <Hero />
         <LogoCloud />
+        <FeaturesSuite />
         <FeaturesIssues />
         <FeaturesBoard />
         <FeaturesAi />
