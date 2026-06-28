@@ -19,6 +19,7 @@ const isPublicRoute = createRouteMatcher([
   "/pricing(.*)",
   "/sign-in(.*)",
   "/sign-up(.*)",
+  "/ingest(.*)",
 ]);
 
 function hostBasedRedirect(
@@ -62,15 +63,13 @@ function hostBasedRedirect(
 }
 
 export default convexAuthNextjsMiddleware(async (request, { convexAuth }) => {
-  const redirect = hostBasedRedirect(
-    request,
-    await convexAuth.isAuthenticated(),
-  );
+  const isAuthenticated = await convexAuth.isAuthenticated();
+  const redirect = hostBasedRedirect(request, isAuthenticated);
   if (redirect) {
     return redirect;
   }
 
-  if (!isPublicRoute(request) && !(await convexAuth.isAuthenticated())) {
+  if (!isPublicRoute(request) && !isAuthenticated) {
     return nextjsMiddlewareRedirect(request, "/sign-in");
   }
 });

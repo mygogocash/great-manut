@@ -38,6 +38,10 @@ yarn-error.log*
 # vercel
 .vercel
 
+# cursor / wrangler local state
+.cursor/
+.wrangler/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

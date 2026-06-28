@@ -4,7 +4,6 @@ import { ConvexAuthNextjsProvider } from "@convex-dev/auth/nextjs";
 import { ConvexReactClient } from "convex/react";
 import { ThemeProvider } from "next-themes";
 import { ReactNode } from "react";
-import { PostHogAuthSync } from "@/components/analytics/posthog-auth-sync";
 import { PostHogPageView } from "@/components/analytics/posthog-pageview";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
@@ -19,7 +18,8 @@ export function Providers({ children }: { children: ReactNode }) {
       disableTransitionOnChange
     >
       <ConvexAuthNextjsProvider client={convex}>
-        <PostHogAuthSync />
+        {/* PostHogAuthSync is mounted only in the app layout to avoid
+            opening Convex subscriptions on public marketing pages. */}
         <PostHogPageView />
         <TooltipProvider>{children}</TooltipProvider>
       </ConvexAuthNextjsProvider>

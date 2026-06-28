@@ -5,6 +5,7 @@ import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { ReactNode, useEffect, useRef } from "react";
 import { api } from "@/convex/_generated/api";
+import { PostHogAuthSync } from "@/components/analytics/posthog-auth-sync";
 import { PlanLimitListener } from "@/components/billing/upgrade-prompt";
 import { CommandProvider } from "@/components/commands/command-provider";
 import { AppSidebar } from "./app-sidebar";
@@ -37,25 +38,34 @@ export function WorkspaceShell({
 
   const currentUser = useQuery(api.users.current);
   const currentOrg = useQuery(api.organizations.current);
-  const workspaces = useQuery(api.organizations.listMine);
+  // Only fetch the full workspace list when the active org doesn't already
+  // match the slug — avoids a live subscription on every page load.
+  const alreadyActive = currentOrg?.slug === orgSlug;
+  const workspaces = useQuery(
+    api.organizations.listMine,
+    alreadyActive ? "skip" : undefined,
+  );
 
   useEffect(() => {
     if (
       activationAttempted.current ||
       currentUser === undefined ||
-      currentUser === null ||
-      workspaces === undefined
+      currentUser === null
     ) {
+      return;
+    }
+
+    if (alreadyActive) {
+      return;
+    }
+
+    if (workspaces === undefined) {
       return;
     }
 
     const belongs = workspaces.some((entry) => entry.org.slug === orgSlug);
     if (!belongs) {
       router.replace("/onboarding");
-      return;
-    }
-
-    if (currentOrg?.slug === orgSlug) {
       return;
     }
 
@@ -66,14 +76,15 @@ export function WorkspaceShell({
     });
   }, [
     activateBySlug,
-    currentOrg?.slug,
+    alreadyActive,
     currentUser,
     orgSlug,
     router,
     workspaces,
   ]);
 
-  if (currentUser === undefined || currentOrg === undefined || workspaces === undefined) {
+  const workspacesReady = alreadyActive || workspaces !== undefined;
+  if (currentUser === undefined || currentOrg === undefined || !workspacesReady) {
     return <FullScreenLoader label="Loading workspace…" />;
   }
 
@@ -87,6 +98,7 @@ export function WorkspaceShell({
 
   return (
     <CommandProvider>
+      <PostHogAuthSync />
       <PlanLimitListener />
       <div className="flex h-dvh overflow-hidden">
         <AppSidebar />

@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { captureEvent } from "@/lib/posthog/client";
 import { PostHogEvents } from "@/lib/posthog/events";
+import { authErrorMessage } from "@/lib/auth-errors";
 
 export function AuthForm({
   mode,
@@ -43,9 +44,7 @@ export function AuthForm({
       );
       router.push("/onboarding");
     } catch (caught) {
-      setError(
-        caught instanceof Error ? caught.message : "Authentication failed"
-      );
+      setError(authErrorMessage(caught));
     } finally {
       setLoading(false);
     }
