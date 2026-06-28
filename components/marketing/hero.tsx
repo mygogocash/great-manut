@@ -1,6 +1,6 @@
 import { ArrowRight, Sparkles } from "lucide-react";
 import Link from "next/link";
-import { PRODUCT_DEFINITION } from "@/lib/product-facts";
+import { HERO_LEDE, PRODUCT_DEFINITION } from "@/lib/product-facts";
 import { appUrl } from "@/lib/site-urls";
 import { Button } from "@/components/ui/button";
 import { Kbd } from "@/components/marketing/kbd";
@@ -38,10 +38,10 @@ export function Hero() {
         >
           Ship faster with an issue tracker that keeps up
         </h1>
-        <p
-          id="hero-definition"
-          className="mt-6 max-w-xl text-base text-balance text-muted-foreground md:text-lg"
-        >
+        <p className="mt-6 max-w-xl text-base text-balance text-muted-foreground md:text-lg">
+          {HERO_LEDE}
+        </p>
+        <p id="hero-definition" className="sr-only">
           {PRODUCT_DEFINITION}
         </p>
 

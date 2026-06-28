@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { BrandMark } from "@/components/shared/brand-mark";
-import { getFooterFacts } from "@/lib/product-facts";
+import { FOOTER_TAGLINE, getFooterFacts } from "@/lib/product-facts";
 import { appUrl } from "@/lib/site-urls";
 
 const LINK_CLASS =
@@ -16,7 +16,7 @@ export function Footer() {
           <div className="max-w-xs lg:col-span-1">
             <BrandMark href="/" />
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-              {facts.definition}
+              {FOOTER_TAGLINE}
             </p>
           </div>
 

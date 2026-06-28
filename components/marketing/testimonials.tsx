@@ -27,7 +27,7 @@ const TESTIMONIALS: {
   },
   {
     quote:
-      "First tracker our engineers don't roast in Slack. ⌘K does everything, the kanban board never lags, and cycles just work.",
+      "First tracker our engineers didn't complain about. ⌘K does everything, the kanban board never lags, and cycles just work.",
     name: "Ada Okafor",
     role: "CTO",
     company: "Hexa Labs",

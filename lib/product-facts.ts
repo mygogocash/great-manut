@@ -14,7 +14,15 @@ export const ENTITY_TRIPLE = {
   audience: "product teams",
 } as const;
 
-/** 40–60 word definition reused across hero, FAQ, llms.txt, and footer. */
+/** Short hero hook for human visitors. */
+export const HERO_LEDE =
+  "Manut is how fast product teams plan, track, and ship — issues, boards, and cycles in a keyboard-first workspace, with an AI agent that handles the busywork.";
+
+/** One-line footer blurb (avoid duplicating the full definition below). */
+export const FOOTER_TAGLINE =
+  "The issue tracker built for speed — plan, track, and ship with your whole team.";
+
+/** 40–60 word definition for FAQ, llms.txt, speakable schema, and agent footer. */
 export const PRODUCT_DEFINITION =
   "Manut is an issue tracker for product teams who want to plan, track, and ship without slowing down. It combines issues, kanban boards, and cycles in one keyboard-first workspace, with an AI agent on Pro that files work, summarizes cycles, and catches duplicates.";
 
