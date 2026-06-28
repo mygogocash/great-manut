@@ -6,9 +6,10 @@
     "dev": "npm-run-all --parallel dev:frontend dev:backend",
     "dev:frontend": "next dev",
     "dev:backend": "convex dev",
-    "build": "opennextjs-cloudflare build",
-    "preview:cf": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-    "deploy": "opennextjs-cloudflare build && wrangler deploy",
+    "build": "next build",
+    "build:cf": "opennextjs-cloudflare build",
+    "preview:cf": "pnpm run build:cf && opennextjs-cloudflare preview",
+    "deploy": "pnpm run build:cf && wrangler deploy",
     "start": "next start",
     "lint": "eslint",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"

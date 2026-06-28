@@ -8,7 +8,7 @@ This repo is built **foundation-first, then in parallel tracks**. Each track is 
 
 1. **ADD files, don't edit shared files.** Your track owns specific directories (see the ownership map). Create new files there freely.
 2. **The schema is FROZEN.** `convex/schema.ts` already contains every table and index for all tracks. Do not edit it. If you genuinely need a schema change, stop and ask the human.
-3. **These shared files are off-limits**: `package.json`, `pnpm-lock.yaml`, `convex/convex.config.ts`, `convex/schema.ts`, `convex/lib/*`, `convex/http.ts`, `convex/webhooks.ts`, `components/providers.tsx`, `app/layout.tsx`, `proxy.ts`, `app/globals.css`, anything in `components/ui/` (shadcn primitives), and other tracks' directories. All dependencies you need are already installed.
+3. **These shared files are off-limits**: `package.json`, `pnpm-lock.yaml`, `convex/convex.config.ts`, `convex/schema.ts`, `convex/lib/*`, `convex/http.ts`, `convex/webhooks.ts`, `components/providers.tsx`, `app/layout.tsx`, `middleware.ts`, `app/globals.css`, anything in `components/ui/` (shadcn primitives), and other tracks' directories. All dependencies you need are already installed.
 4. **Registry files allow ONE-LINE additions only** (append an import + spread/entry; never modify existing lines):
    - `components/commands/registry.ts` — add command-palette commands & single-key shortcuts.
    - `components/issue-detail/slots.tsx` — register panels on the issue detail page (main column or sidebar).
