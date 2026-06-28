@@ -28,4 +28,5 @@ jobs:
       - name: Deploy to Convex
         env:
           CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
+          CONVEX_DEPLOYMENT: dev:modest-schnauzer-996
         run: npx convex deploy --yes
