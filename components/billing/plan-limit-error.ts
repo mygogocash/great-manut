@@ -9,7 +9,34 @@ import { FREE_PLAN_DISPLAY_LIMITS } from "@/lib/plans";
 
 export type PlanLimitKind = "issues" | "projects" | "seats";
 
+export type FeatureGateKind =
+  | "docs_write"
+  | "discovery"
+  | "service_desk"
+  | "automations";
+
+export type UpgradePromptKind = PlanLimitKind | FeatureGateKind;
+
 const LIMIT_PATTERN = /free plan is limited to\s+(\d+)\s+(issues?|projects?|members?)/i;
+
+const FEATURE_GATE_PATTERNS: { kind: FeatureGateKind; pattern: RegExp }[] = [
+  {
+    kind: "docs_write",
+    pattern: /creating doc spaces requires a pro or enterprise plan/i,
+  },
+  {
+    kind: "discovery",
+    pattern: /product discovery requires a pro or enterprise plan/i,
+  },
+  {
+    kind: "service_desk",
+    pattern: /service desk requires an enterprise plan/i,
+  },
+  {
+    kind: "automations",
+    pattern: /automations require an enterprise plan/i,
+  },
+];
 
 export type PlanLimitMatch = {
   kind: PlanLimitKind;
@@ -25,6 +52,18 @@ export function getErrorMessage(error: unknown): string {
     return error;
   }
   return "";
+}
+
+/** Match a suite feature-gate error message. */
+export function matchFeatureGateMessage(
+  message: string
+): FeatureGateKind | null {
+  for (const { kind, pattern } of FEATURE_GATE_PATTERNS) {
+    if (pattern.test(message)) {
+      return kind;
+    }
+  }
+  return null;
 }
 
 /** Match a free-plan limit error message, returning which limit was hit. */
@@ -49,11 +88,55 @@ export function matchPlanLimitError(error: unknown): PlanLimitMatch | null {
   return matchPlanLimitMessage(getErrorMessage(error));
 }
 
+export function matchFeatureGateError(error: unknown): FeatureGateKind | null {
+  return matchFeatureGateMessage(getErrorMessage(error));
+}
+
+export function matchUpgradePromptMessage(
+  message: string
+): UpgradePromptKind | null {
+  const limit = matchPlanLimitMessage(message);
+  if (limit) {
+    return limit.kind;
+  }
+  return matchFeatureGateMessage(message);
+}
+
 export function isPlanLimitError(error: unknown): boolean {
   return matchPlanLimitError(error) !== null;
 }
 
 /** Upgrade-prompt copy per limit kind. */
+export const FEATURE_GATE_COPY: Record<
+  FeatureGateKind,
+  { title: string; description: string; targetPlan: "pro" | "enterprise" }
+> = {
+  docs_write: {
+    title: "Create doc spaces on Pro",
+    description:
+      "Free workspaces can read shared docs. Upgrade to Pro to create wiki spaces for your teams.",
+    targetPlan: "pro",
+  },
+  discovery: {
+    title: "Product Discovery on Pro",
+    description:
+      "Upgrade to Pro to capture ideas, prioritize on a board or matrix, and promote work into issues.",
+    targetPlan: "pro",
+  },
+  service_desk: {
+    title: "Service desk on Enterprise",
+    description:
+      "Upgrade to Enterprise for customer portals, agent queues, and request-to-issue workflows.",
+    targetPlan: "enterprise",
+  },
+  automations: {
+    title: "Automations on Enterprise",
+    description:
+      "Upgrade to Enterprise to automate issue and service-request workflows with custom rules.",
+    targetPlan: "enterprise",
+  },
+};
+
 export const PLAN_LIMIT_COPY: Record<
   PlanLimitKind,
   { title: string; description: string }

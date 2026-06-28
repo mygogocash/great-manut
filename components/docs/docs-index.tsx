@@ -6,6 +6,8 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { api } from "@/convex/_generated/api";
+import { UpgradePromptDialog } from "@/components/billing/upgrade-prompt";
+import { useSuiteFeatureAccess } from "@/components/billing/use-suite-feature-access";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -14,8 +16,18 @@ import { CreateSpaceDialog } from "@/components/docs/create-space-dialog";
 export function DocsIndex() {
   const params = useParams<{ orgSlug: string }>();
   const spaces = useQuery(api.docs.spacesList, {});
+  const { hasAccess: canCreateSpace } = useSuiteFeatureAccess("docs_write");
   const [filter, setFilter] = useState("");
   const [createOpen, setCreateOpen] = useState(false);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
+
+  const openCreate = () => {
+    if (!canCreateSpace) {
+      setUpgradeOpen(true);
+      return;
+    }
+    setCreateOpen(true);
+  };
 
   const filtered = useMemo(() => {
     if (!spaces) {
@@ -44,7 +56,7 @@ export function DocsIndex() {
             </span>
           )}
         </div>
-        <Button size="sm" variant="outline" onClick={() => setCreateOpen(true)}>
+        <Button size="sm" variant="outline" onClick={openCreate}>
           <Plus className="size-4" />
           New space
         </Button>
@@ -71,7 +83,7 @@ export function DocsIndex() {
           <div className="flex flex-col items-center justify-center gap-3 py-16 text-sm text-muted-foreground">
             <BookOpen className="size-8 opacity-40" />
             <p>No doc spaces yet.</p>
-            <Button size="sm" onClick={() => setCreateOpen(true)}>
+            <Button size="sm" onClick={openCreate}>
               <Plus className="size-4" />
               Create space
             </Button>
@@ -108,6 +120,11 @@ export function DocsIndex() {
         orgSlug={params.orgSlug}
         open={createOpen}
         onOpenChange={setCreateOpen}
+      />
+      <UpgradePromptDialog
+        open={upgradeOpen}
+        onOpenChange={setUpgradeOpen}
+        kind="docs_write"
       />
     </>
   );
