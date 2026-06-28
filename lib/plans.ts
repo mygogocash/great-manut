@@ -33,7 +33,7 @@ export type PlanDefinition = {
 export const FREE_PLAN: PlanDefinition = {
   plan: "free",
   name: "Free",
-  tagline: "For small teams getting started with issue tracking.",
+  tagline: "For small teams getting started with Plan — issues, boards, and cycles.",
   monthlyPrice: 0,
   annualMonthlyPrice: 0,
   maxSeats: FREE_PLAN_DISPLAY_LIMITS.seats,
@@ -41,8 +41,8 @@ export const FREE_PLAN: PlanDefinition = {
     `Up to ${FREE_PLAN_DISPLAY_LIMITS.seats} members`,
     `${FREE_PLAN_DISPLAY_LIMITS.projects} projects`,
     `${FREE_PLAN_DISPLAY_LIMITS.issues} issues`,
-    "Unlimited teams and cycles",
-    "Kanban boards and saved views",
+    "Plan: issues, boards, cycles, and search",
+    "Knowledge: read shared doc spaces",
     "Realtime collaboration",
   ],
 };
@@ -50,7 +50,7 @@ export const FREE_PLAN: PlanDefinition = {
 export const PRO_PLAN: PlanDefinition = {
   plan: "pro",
   name: "Pro",
-  tagline: "For growing teams that want AI superpowers and no limits.",
+  tagline: "For growing teams — Knowledge, Discovery, and AI alongside Plan.",
   monthlyPrice: 20,
   annualMonthlyPrice: 16,
   priceNote: "+$10 per seat after the first · up to 10 members",
@@ -59,9 +59,10 @@ export const PRO_PLAN: PlanDefinition = {
   highlights: [
     "Up to 10 members (seat-based)",
     "Unlimited projects and issues",
+    "Knowledge: create doc spaces and wikis",
+    "Discovery: ideas board and promote-to-issue",
     "AI agent with workspace context",
     "50 AI messages per user per day",
-    "Triage assist and duplicate detection",
   ],
   popular: true,
 };
@@ -69,7 +70,7 @@ export const PRO_PLAN: PlanDefinition = {
 export const ENTERPRISE_PLAN: PlanDefinition = {
   plan: "enterprise",
   name: "Enterprise",
-  tagline: "For organizations that need unlimited scale and support.",
+  tagline: "Full suite — Service desk and Automations at unlimited scale.",
   monthlyPrice: 99,
   annualMonthlyPrice: 79,
   priceNote: "Flat rate · unlimited members",
@@ -77,9 +78,10 @@ export const ENTERPRISE_PLAN: PlanDefinition = {
   highlightsLeadIn: "Everything in Pro, plus:",
   highlights: [
     "Unlimited members",
+    "Service: customer portal and agent queues",
+    "Automations for issues and requests",
     "Unlimited AI usage",
     "Priority support",
-    "Flat predictable pricing",
   ],
 };
 
@@ -120,7 +122,7 @@ export type ComparisonSection = {
 
 export const COMPARISON_SECTIONS: ComparisonSection[] = [
   {
-    title: "Usage",
+    title: "Plan",
     rows: [
       {
         label: "Members",
@@ -147,15 +149,24 @@ export const COMPARISON_SECTIONS: ComparisonSection[] = [
         ],
       },
       { label: "Teams and cycles", values: ["Unlimited", "Unlimited", "Unlimited"] },
-    ],
-  },
-  {
-    title: "Features",
-    rows: [
       { label: "Kanban boards and list views", values: [true, true, true] },
       { label: "Saved views and full-text search", values: [true, true, true] },
       { label: "Comments, mentions and activity", values: [true, true, true] },
-      { label: "Realtime presence", values: [true, true, true] },
+    ],
+  },
+  {
+    title: "Knowledge",
+    rows: [
+      { label: "Docs — read spaces", values: [true, true, true] },
+      { label: "Docs — create spaces", values: [false, true, true] },
+      { label: "Product Discovery", values: [false, true, true] },
+    ],
+  },
+  {
+    title: "Service",
+    rows: [
+      { label: "Service desk portal", values: [false, false, true] },
+      { label: "Agent queues and SLAs", values: [false, false, true] },
     ],
   },
   {
@@ -169,6 +180,12 @@ export const COMPARISON_SECTIONS: ComparisonSection[] = [
       { label: "Triage assist", values: [false, true, true] },
       { label: "Duplicate detection", values: [false, true, true] },
       { label: "Standup and cycle reports", values: [false, true, true] },
+    ],
+  },
+  {
+    title: "Automations",
+    rows: [
+      { label: "Issue and request automations", values: [false, false, true] },
     ],
   },
   {
