@@ -3,7 +3,7 @@ import { Doc, Id } from "./_generated/dataModel";
 import { QueryCtx } from "./_generated/server";
 import { logActivity } from "./lib/activity";
 import { orgMutation, orgQuery } from "./lib/customFunctions";
-import { assertCanCreateIssue } from "./lib/limits";
+import { assertCanCreateIssue, assertHasDiscovery } from "./lib/limits";
 import { ideaStatusValidator } from "./schema";
 
 export const ideaShape = {
@@ -110,6 +110,7 @@ export const create = orgMutation({
   },
   returns: v.id("ideas"),
   handler: async (ctx, args) => {
+    assertHasDiscovery(ctx.org);
     const impact = args.impact ?? 3;
     const effort = args.effort ?? 3;
     assertScore(impact, "Impact");
@@ -171,6 +172,7 @@ export const update = orgMutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
+    assertHasDiscovery(ctx.org);
     const idea = await getOrgIdea(ctx, ctx.org._id, args.ideaId);
     const updates: Partial<Doc<"ideas">> = { updatedAt: Date.now() };
 
@@ -233,6 +235,7 @@ export const remove = orgMutation({
   args: { ideaId: v.id("ideas") },
   returns: v.null(),
   handler: async (ctx, args) => {
+    assertHasDiscovery(ctx.org);
     const idea = await getOrgIdea(ctx, ctx.org._id, args.ideaId);
     await ctx.db.delete(idea._id);
     return null;
@@ -249,6 +252,7 @@ export const promote = orgMutation({
   },
   returns: v.id("issues"),
   handler: async (ctx, args) => {
+    assertHasDiscovery(ctx.org);
     const idea = await getOrgIdea(ctx, ctx.org._id, args.ideaId);
     if (idea.promotedIssueId) {
       throw new Error("Idea has already been promoted to an issue");
