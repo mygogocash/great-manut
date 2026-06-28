@@ -1,0 +1,41 @@
+export type WorkspaceRoute =
+  | { kind: "home" }
+  | { kind: "projects" }
+  | { kind: "cycles" }
+  | { kind: "ai" }
+  | { kind: "search" }
+  | { kind: "team"; teamId: string }
+  | { kind: "team-board"; teamId: string }
+  | { kind: "unknown" };
+
+/** Map optional catch-all segments to a workspace view (sidebar routes only). */
+export function parseWorkspaceRoute(
+  section: string[] | undefined,
+): WorkspaceRoute {
+  if (!section || section.length === 0) {
+    return { kind: "home" };
+  }
+
+  const [first, second, third] = section;
+
+  if (first === "projects" && section.length === 1) {
+    return { kind: "projects" };
+  }
+  if (first === "cycles" && section.length === 1) {
+    return { kind: "cycles" };
+  }
+  if (first === "ai" && section.length === 1) {
+    return { kind: "ai" };
+  }
+  if (first === "search" && section.length === 1) {
+    return { kind: "search" };
+  }
+  if (first === "team" && second && section.length === 2) {
+    return { kind: "team", teamId: second };
+  }
+  if (first === "team" && second && third === "board" && section.length === 3) {
+    return { kind: "team-board", teamId: second };
+  }
+
+  return { kind: "unknown" };
+}

@@ -11,8 +11,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { CreateCycleDialog } from "@/components/cycles/create-cycle-dialog";
 import { CycleRow } from "@/components/cycles/cycle-row";
 
-/** Cycles index — Track B. Per-team time-boxed cycles, grouped by team. */
-export default function CyclesPage() {
+/** Cycles index — per-team time-boxed cycles, grouped by team. */
+export function CyclesIndexView() {
   return (
     <Suspense
       fallback={
@@ -21,23 +21,21 @@ export default function CyclesPage() {
         </div>
       }
     >
-      <CyclesPageInner />
+      <CyclesIndexInner />
     </Suspense>
   );
 }
 
-function CyclesPageInner() {
+function CyclesIndexInner() {
   const cycles = useQuery(api.cycles.listWithProgress);
   const teams = useQuery(api.teams.list);
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
-  // The command palette deep-links here with ?new=true to open the dialog,
-  // so the URL param is treated as a second "open" source of truth.
   const wantNew = searchParams.get("new") === "true";
   const [manualOpen, setManualOpen] = useState(false);
   const [createTeamId, setCreateTeamId] = useState<Id<"teams"> | undefined>(
-    undefined
+    undefined,
   );
   const createOpen = manualOpen || wantNew;
 
@@ -58,7 +56,7 @@ function CyclesPageInner() {
 
   const loading = cycles === undefined || teams === undefined;
   const teamsWithCycles = teams?.filter((team) =>
-    cycles?.some((cycle) => cycle.teamId === team._id)
+    cycles?.some((cycle) => cycle.teamId === team._id),
   );
 
   return (
