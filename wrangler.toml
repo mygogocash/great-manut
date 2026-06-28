@@ -1,10 +1,13 @@
-# Cloudflare Workers Builds — matches dashboard project "great-manut"
+# Cloudflare Workers Builds — preview deploys to vector-preview (clean worker).
+# The legacy great-manut worker still has Durable Objects from the old API;
+# delete that script in the Cloudflare dashboard or run a one-time DO migration
+# before reusing the great-manut name for production.
 # Build: pnpm run build  →  opennextjs-cloudflare build (.open-next/)
 # open-next.config.ts sets buildCommand to "next build" so OpenNext does not recurse.
 # Deploy: npx wrangler deploy
 
 "$schema" = "./node_modules/wrangler/config-schema.json"
-name = "great-manut"
+name = "vector-preview"
 main = ".open-next/worker.js"
 compatibility_date = "2026-06-27"
 compatibility_flags = ["nodejs_compat", "global_fetch_strictly_public"]
@@ -18,18 +21,7 @@ enabled = true
 
 [[services]]
 binding = "WORKER_SELF_REFERENCE"
-service = "great-manut"
+service = "vector-preview"
 
 [images]
 binding = "IMAGES"
-
-# Durable Object migration chain for reusing the great-manut worker name after
-# replacing the old API with OpenNext. v0 matches the previously deployed class;
-# v1 removes it so the Next.js worker can publish.
-[[migrations]]
-tag = "v0-sync-room"
-new_sqlite_classes = ["SyncRoomDurableObject"]
-
-[[migrations]]
-tag = "v1-vector-opennext"
-deleted_classes = ["SyncRoomDurableObject"]
