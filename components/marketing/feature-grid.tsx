@@ -44,7 +44,7 @@ const FEATURES: { icon: LucideIcon; title: string; description: string }[] = [
     icon: Boxes,
     title: "Multi-team workspaces",
     description:
-      "Each team gets its own key, board, and cycles — ENG-142 means the same thing to everyone.",
+      "Each team gets its own key, kanban board, and cycles — ENG-142 means the same thing to everyone.",
   },
 ];
 
@@ -53,8 +53,8 @@ export function FeatureGrid() {
     <Section>
       <SectionHeading
         eyebrow="05 · Everything else"
-        title="All the table stakes, none of the bloat"
-        lede="The features you expect from a serious tracker — built in, fast, and out of your way."
+        title="Serious issue tracking, zero bloat"
+        lede="Search, saved views, attachments, presence, and multi-team workspaces — built in, fast, and out of your way."
         align="center"
       />
       <div className="mt-14 grid gap-px overflow-hidden rounded-xl border bg-border sm:grid-cols-2 lg:grid-cols-3">

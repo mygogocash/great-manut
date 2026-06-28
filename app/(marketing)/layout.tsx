@@ -1,7 +1,26 @@
+import type { Metadata } from "next";
 import { MarketingNavAuth } from "@/components/auth/marketing-nav-auth";
 import { BrandMark } from "@/components/shared/brand-mark";
 import { Button } from "@/components/ui/button";
+import {
+  marketingOpenGraphDefaults,
+  marketingTwitterDefaults,
+} from "@/lib/seo";
+import { marketingUrl } from "@/lib/site-urls";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  openGraph: {
+    ...marketingOpenGraphDefaults,
+    url: marketingUrl("/"),
+  },
+  twitter: marketingTwitterDefaults,
+  alternates: {
+    types: {
+      "text/plain": [{ url: "/llms.txt", title: "llms.txt" }],
+    },
+  },
+};
 
 export default function MarketingLayout({
   children,

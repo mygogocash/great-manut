@@ -1,5 +1,5 @@
 /**
- * Plan definitions and display helpers for Vector billing UI.
+ * Plan definitions and display helpers for Manut billing UI.
  *
  * `convex/lib/limits.ts` is the authoritative enforcement of free-tier caps;
  * the numbers here mirror it for display purposes.

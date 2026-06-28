@@ -22,7 +22,7 @@ export function LogoCloud() {
     <section className="border-t">
       <div className="mx-auto w-full max-w-6xl px-6 py-12">
         <p className="text-center font-mono text-[11px] tracking-[0.2em] text-muted-foreground uppercase">
-          Powering product teams at
+          Product teams that switched and stayed
         </p>
         <div className="mt-7 flex flex-wrap items-center justify-center gap-x-10 gap-y-5 md:justify-between">
           {COMPANIES.map(({ name, icon: Icon }) => (

@@ -7,8 +7,8 @@ const SHORTCUTS: { keys: string[]; label: string }[] = [
   { keys: ["C"], label: "Create issue" },
   { keys: ["A"], label: "Assign" },
   { keys: ["L"], label: "Add label" },
-  { keys: ["B"], label: "Open board" },
-  { keys: ["⌘", "J"], label: "Ask the agent" },
+  { keys: ["B"], label: "Open kanban board" },
+  { keys: ["⌘", "J"], label: "Ask the AI agent" },
 ];
 
 export function FeaturesKeyboard() {

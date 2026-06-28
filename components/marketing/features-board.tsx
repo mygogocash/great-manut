@@ -15,8 +15,8 @@ export function FeaturesBoard() {
     <Section id="cycles">
       <SectionHeading
         eyebrow="02 · Board & Cycles"
-        title="Momentum you can measure"
-        lede="Drag issues across a fluid board, plan work into auto-numbered cycles, and watch scope and progress update live as the team ships."
+        title="Kanban boards and cycles with real momentum"
+        lede="Drag issues across a fluid kanban board, plan work into auto-numbered cycles, and watch scope and progress update live as the team ships."
         align="center"
       />
       <div className="mt-14 grid items-start gap-6 lg:grid-cols-[1fr_20rem]">

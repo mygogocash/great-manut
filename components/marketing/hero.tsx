@@ -1,5 +1,6 @@
 import { ArrowRight, Sparkles } from "lucide-react";
 import Link from "next/link";
+import { PRODUCT_DEFINITION } from "@/lib/product-facts";
 import { appUrl } from "@/lib/site-urls";
 import { Button } from "@/components/ui/button";
 import { Kbd } from "@/components/marketing/kbd";
@@ -27,32 +28,36 @@ export function Hero() {
             <Sparkles className="size-2.5" />
             New
           </span>
-          The AI agent joins your team on Pro
+          AI agent on Pro — see what it can do
           <ArrowRight className="size-3 transition-transform group-hover:translate-x-0.5" />
         </Link>
 
-        <h1 className="mt-8 max-w-3xl text-5xl font-semibold tracking-tighter text-balance md:text-7xl">
-          The issue tracker built for speed
+        <h1
+          id="hero-headline"
+          className="mt-8 max-w-3xl text-5xl font-semibold tracking-tighter text-balance md:text-7xl"
+        >
+          Ship faster with an issue tracker that keeps up
         </h1>
-        <p className="mt-6 max-w-xl text-base text-balance text-muted-foreground md:text-lg">
-          Manut is how fast product teams plan, track, and ship — issues,
-          boards, and cycles in a keyboard-first workspace, with an AI agent
-          that handles the busywork.
+        <p
+          id="hero-definition"
+          className="mt-6 max-w-xl text-base text-balance text-muted-foreground md:text-lg"
+        >
+          {PRODUCT_DEFINITION}
         </p>
 
         <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row">
           <Button size="lg" className="h-10 px-5" asChild>
             <Link href={appUrl("/sign-up")}>
-              Start building — free
+              Start free
               <ArrowRight className="size-4" />
             </Link>
           </Button>
           <Button size="lg" variant="outline" className="h-10 px-5" asChild>
-            <Link href="/pricing">View pricing</Link>
+            <Link href="/pricing">See plans</Link>
           </Button>
         </div>
-        <p className="mt-4 flex items-center gap-1.5 font-mono text-[11px] text-muted-foreground">
-          Free for teams of 3 · No credit card · Press
+        <p className="mt-4 flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1 font-mono text-[11px] text-muted-foreground">
+          No credit card · Free for 3 teammates · Press
           <Kbd>⌘</Kbd>
           <Kbd>K</Kbd>
           anywhere

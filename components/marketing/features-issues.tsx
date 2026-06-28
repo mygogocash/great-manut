@@ -10,24 +10,24 @@ export function FeaturesIssues() {
         <div>
           <SectionHeading
             eyebrow="01 · Issues"
-            title="Issues that move at the speed of thought"
-            lede="Create in seconds, triage with single keys, and never hit refresh — every change syncs to every teammate in real time."
+            title="Issues that keep pace with your team"
+            lede="File work in seconds, triage with a single key, and watch every change sync live — no refresh button, no waiting on spinners."
           />
           <div className="mt-10 grid gap-7 sm:grid-cols-2">
             <FeatureBullet
               icon={Zap}
               title="Fast by default"
-              description="Optimistic updates land before your hand leaves the keyboard. No spinners between you and the work."
+              description="Optimistic updates land before your hand leaves the keyboard. The issue tracker stays out of your way."
             />
             <FeatureBullet
               icon={GitBranch}
               title="Sub-issues & relations"
-              description="Break work down, mark blockers and duplicates, and keep every dependency visible."
+              description="Break epics down, mark blockers and duplicates, and keep every dependency visible on the issue."
             />
             <FeatureBullet
               icon={AtSign}
               title="Comments & @mentions"
-              description="Discussion lives on the issue — mention a teammate and they're in the loop instantly."
+              description="Discussion lives on the issue — @mention a teammate and they're in the loop instantly."
             />
             <FeatureBullet
               icon={Activity}
