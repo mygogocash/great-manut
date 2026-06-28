@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { BrandMark } from "@/components/shared/brand-mark";
+import { appUrl } from "@/lib/site-urls";
 
 const COLUMNS: {
   heading: string;
@@ -17,9 +19,9 @@ const COLUMNS: {
   {
     heading: "Get started",
     links: [
-      { label: "Sign up", href: "/sign-up" },
-      { label: "Log in", href: "/sign-in" },
-      { label: "Open app", href: "/onboarding" },
+      { label: "Sign up", href: appUrl("/sign-up") },
+      { label: "Log in", href: appUrl("/sign-in") },
+      { label: "Open app", href: appUrl("/onboarding") },
     ],
   },
 ];
@@ -30,12 +32,7 @@ export function Footer() {
       <div className="mx-auto w-full max-w-6xl px-6 py-14">
         <div className="flex flex-col justify-between gap-10 md:flex-row">
           <div className="max-w-xs">
-            <Link href="/" className="flex items-center gap-2 font-semibold">
-              <span className="flex size-6 items-center justify-center rounded bg-primary text-xs font-bold text-primary-foreground">
-                V
-              </span>
-              Vector
-            </Link>
+            <BrandMark href="/" />
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
               The issue tracker built for speed. Plan, track, and ship with
               your whole team — and an AI agent — in one keyboard-first
@@ -63,7 +60,7 @@ export function Footer() {
         </div>
         <div className="mt-12 flex flex-col items-start justify-between gap-3 border-t pt-6 sm:flex-row sm:items-center">
           <p className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} Vector. All systems operational.
+            © {new Date().getFullYear()} Manut. All systems operational.
           </p>
           <p className="flex items-center gap-1.5 font-mono text-[11px] text-muted-foreground">
             <span className="size-1.5 rounded-full bg-emerald-500" />

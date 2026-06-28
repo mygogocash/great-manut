@@ -14,6 +14,8 @@ import { QuotaPill } from "./quota-pill";
 import { ThreadList } from "./thread-list";
 import { AiUpgradeCta } from "./upgrade-cta";
 import { useAiAccess } from "./use-ai-access";
+import { captureEvent } from "@/lib/posthog/client";
+import { PostHogEvents } from "@/lib/posthog/events";
 
 const SUGGESTIONS = [
   "What should I work on next?",
@@ -81,6 +83,10 @@ function AiWorkspace() {
         setSelectedThreadId(threadId);
       }
       await sendMessage({ threadId, prompt });
+      captureEvent(PostHogEvents.aiMessageSent, {
+        thread_id: threadId,
+        prompt_length: prompt.length,
+      });
     } catch (error) {
       toast.error(
         convexErrorMessage(error, "Failed to send message. Please try again.")
@@ -151,9 +157,9 @@ function EmptyState({
           <Sparkles className="size-5 text-primary" />
         </div>
         <div className="flex flex-col gap-1">
-          <h2 className="text-base font-semibold">Ask Vector</h2>
+          <h2 className="text-base font-semibold">Ask Manut</h2>
           <p className="text-sm text-muted-foreground">
-            Vector knows your teams, issues, projects and cycles — and can
+            Manut knows your teams, issues, projects and cycles — and can
             create or update issues for you.
           </p>
         </div>

@@ -13,7 +13,7 @@ export type VectorAgentCtx = {
   requestUserId: Id<"users">;
 };
 
-export const VECTOR_INSTRUCTIONS = `You are Vector, the workspace assistant inside the Vector issue tracker (a Linear-style tool: organizations contain teams, teams contain issues like ENG-42, plus projects and cycles).
+export const VECTOR_INSTRUCTIONS = `You are Manut, the workspace assistant inside the Manut issue tracker (a Linear-style tool: organizations contain teams, teams contain issues like ENG-42, plus projects and cycles).
 
 You can use tools to look up teams, members, projects, cycles and issues, run reports, search (full-text and semantic), and create or update issues.
 
@@ -26,7 +26,7 @@ Guidelines:
 - You only ever see one workspace. If asked about anything outside it, say you can't access that.`;
 
 export const vectorAgent = new Agent<VectorAgentCtx>(components.agent, {
-  name: "Vector",
+  name: "Manut",
   languageModel: chatModel,
   instructions: VECTOR_INSTRUCTIONS,
   tools: vectorTools,

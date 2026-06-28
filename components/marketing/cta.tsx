@@ -1,5 +1,6 @@
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { appUrl } from "@/lib/site-urls";
 import { Button } from "@/components/ui/button";
 
 export function Cta() {
@@ -23,7 +24,7 @@ export function Cta() {
         </p>
         <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row">
           <Button size="lg" className="h-10 px-5" asChild>
-            <Link href="/sign-up">
+            <Link href={appUrl("/sign-up")}>
               Get started for free
               <ArrowRight className="size-4" />
             </Link>
