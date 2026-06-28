@@ -22,3 +22,9 @@ service = "great-manut"
 
 [images]
 binding = "IMAGES"
+
+# Remove Durable Object class from the previous Great Manut API worker so the
+# OpenNext bundle can deploy to the same script name.
+[[migrations]]
+tag = "v1-vector-opennext"
+deleted_classes = ["SyncRoomDurableObject"]
