@@ -1,6 +1,6 @@
 # Cloudflare Workers Builds — matches dashboard project "great-manut"
-# Build: pnpm run build:cf  →  opennextjs-cloudflare build (.open-next/)
-# Note: "build" is next build only — OpenNext invokes it internally; do not point Workers Builds at "build".
+# Build: pnpm run build  →  opennextjs-cloudflare build (.open-next/)
+# open-next.config.ts sets buildCommand to "next build" so OpenNext does not recurse.
 # Deploy: npx wrangler deploy
 
 "$schema" = "./node_modules/wrangler/config-schema.json"
