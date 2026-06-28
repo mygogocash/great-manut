@@ -2,6 +2,7 @@
   "name": "vector-youtube-app",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@9.15.9",
   "scripts": {
     "dev": "npm-run-all --parallel dev:frontend dev:backend",
     "dev:frontend": "next dev",
@@ -14,6 +15,8 @@
     "deploy:convex": "./scripts/deploy-convex.sh",
     "start": "next start",
     "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "audit:ci": "pnpm audit --audit-level=high",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
   },
   "dependencies": {

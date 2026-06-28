@@ -80,22 +80,21 @@ Do not start dev servers or push to the Convex deployment from a worktree.
 
 ## Reference
 
-- Convex dev deployment: `modest-schnauzer-996` (project `vector-16da8`, team `sonny-sangha`). Main checkout runs `npx convex dev`.
-- Clerk app: "Vector" (`app_3F1z9a2XnHPNAns4Oq4jbHon99c`), dev instance, JWT template `convex` (adds `org_id`/`org_slug`/`org_role` claims).
-- Clerk webhooks → `https://modest-schnauzer-996.convex.site/clerk-webhook` (users, orgs, memberships, subscriptions all subscribed).
+- Convex dev deployment: `sincere-oriole-287` (project `great-manut`, team `kunanon-jarat`). Main checkout runs `npx convex dev`.
 - Design doc: `docs/specs/2026-06-12-linear-clone-design.md`.
 
 ## Learned User Preferences
 
 ## Learned Workspace Facts
 
-- Production frontend deploy branch is `preview` (Cloudflare Workers Builds), not `main`.
-- Live production URL is https://app.manut.xyz, served by Cloudflare Worker `great-manut` on the GoGoCash Cloudflare account.
+- Production frontend deploys on push to `main` via GitHub Actions (`Deploy Cloudflare` workflow); the `preview` branch was merged into `main`.
+- Live production URLs: https://app.manut.xyz (auth/workspace) and https://manut.xyz (marketing), both on Cloudflare Worker `great-manut` (GoGoCash account).
 - Frontend deploys via OpenNext (`@opennextjs/cloudflare`) on Cloudflare Workers; `open-next.config.ts` sets `buildCommand: "next build"` to avoid build recursion.
 - `NEXT_PUBLIC_CONVEX_URL` and `NEXT_PUBLIC_CONVEX_SITE_URL` must be in `wrangler.toml` `[vars]` and inlined at build time — missing runtime vars cause HTTP 500 on the Worker.
 - Auth uses Convex Auth (`@convex-dev/auth`) with email/password; Clerk was removed — ignore stale Clerk references elsewhere in this file.
-- Edge auth middleware lives in `middleware.ts` (not Next 16 `proxy.ts`) for OpenNext on Cloudflare.
+- Edge auth middleware lives in `middleware.ts` (not Next 16 `proxy.ts`) for OpenNext on Cloudflare; `/ingest` must stay a public route for PostHog proxying.
 - ESLint must ignore `.open-next/**` (OpenNext build artifacts break lint otherwise).
-- Convex dev deployment: `sincere-oriole-287` (project `great-manut`, team `kunanon-jarat`). Run `npx convex dev` from main checkout.
-- GitHub repo is `mygogocash/great-manut`.
-- PostHog analytics via `posthog-js` + `instrumentation-client.ts`; events proxy through `/ingest` rewrites in `next.config.ts`. Set `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` at build time (`.env.local` + Cloudflare Workers Builds env). B2B org grouping uses PostHog `organization` group from `organizations.current`.
+- Convex dev deployment: `sincere-oriole-287` (project `great-manut`, team `kunanon-jarat`). Run `npx convex dev` from main checkout; CI uses `CONVEX_DEPLOY_KEY` in GitHub secrets.
+- Workspace sidebar nav uses `app/(app)/[orgSlug]/[[...section]]/page.tsx` for client-side routing between Projects, Cycles, Teams, and AI.
+- GitHub repo is `mygogocash/great-manut`; `main` branch protection requires CI checks (Lint, Typecheck, Build, Security audit) and one PR review.
+- PostHog analytics via `posthog-js` + `instrumentation-client.ts`; events proxy through `/ingest` rewrites in `next.config.ts`. Set `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` at build time (`.env.local` + Cloudflare/GitHub Actions env). B2B org grouping uses PostHog `organization` group from `organizations.current`.
