@@ -11,7 +11,6 @@ import {
   Search,
   SquarePen,
 } from "lucide-react";
-import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 import { ReactNode, useState } from "react";
 import { api } from "@/convex/_generated/api";
@@ -25,7 +24,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useCommands } from "@/components/commands/command-provider";
 import { CreateTeamDialog } from "@/components/teams/create-team-dialog";
-import { cn } from "@/lib/utils";
+import { FastNavLink } from "@/components/shell/fast-nav-link";
 import { ThemeToggle } from "./theme-toggle";
 
 function NavLink({
@@ -42,16 +41,9 @@ function NavLink({
   const pathname = usePathname();
   const active = exact ? pathname === href : pathname.startsWith(href);
   return (
-    <Link
-      href={href}
-      className={cn(
-        "flex h-7 items-center gap-2 rounded-md px-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground",
-        active && "bg-accent text-foreground"
-      )}
-    >
-      {icon}
-      <span className="truncate">{children}</span>
-    </Link>
+    <FastNavLink href={href} icon={icon} active={active}>
+      {children}
+    </FastNavLink>
   );
 }
 

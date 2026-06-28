@@ -3,12 +3,7 @@
 import { useQuery } from "convex/react";
 import { Columns3, List, Loader2, Plus } from "lucide-react";
 import Link from "next/link";
-import {
-  useParams,
-  usePathname,
-  useRouter,
-  useSearchParams,
-} from "next/navigation";
+import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useMemo } from "react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
@@ -38,22 +33,17 @@ function CenteredSpinner() {
   );
 }
 
-/**
- * Team board route (Track A): Kanban board + filtered list display with
- * URL-encoded filters and saved views. Lives alongside the foundation's
- * issues list at /team/[teamId].
- */
-export default function TeamBoardPage() {
+/** Team board + filtered list view. */
+export function TeamBoardView({ teamId }: { teamId: Id<"teams"> }) {
   return (
     <Suspense fallback={<CenteredSpinner />}>
-      <TeamBoardContent />
+      <TeamBoardContent teamId={teamId} />
     </Suspense>
   );
 }
 
-function TeamBoardContent() {
-  const params = useParams<{ orgSlug: string; teamId: string }>();
-  const teamId = params.teamId as Id<"teams">;
+function TeamBoardContent({ teamId }: { teamId: Id<"teams"> }) {
+  const params = useParams<{ orgSlug: string }>();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -67,7 +57,7 @@ function TeamBoardContent() {
 
   const filters = useMemo(
     () => filtersFromSearchParams(searchParams),
-    [searchParams]
+    [searchParams],
   );
   const display = displayFromSearchParams(searchParams);
 
@@ -107,9 +97,9 @@ function TeamBoardContent() {
   const filteredIssues = useMemo(
     () =>
       (issues ?? []).filter((issue) =>
-        issueMatchesFilters(issue, filters, labelIdsByIssue)
+        issueMatchesFilters(issue, filters, labelIdsByIssue),
       ),
-    [issues, filters, labelIdsByIssue]
+    [issues, filters, labelIdsByIssue],
   );
 
   if (team === undefined || issues === undefined) {
@@ -130,6 +120,7 @@ function TeamBoardContent() {
         <div className="flex min-w-0 items-center gap-2 text-sm">
           <Link
             href={`/${params.orgSlug}/team/${teamId}`}
+            prefetch={false}
             className="truncate font-medium text-muted-foreground hover:text-foreground"
           >
             {team.name}

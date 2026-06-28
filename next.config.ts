@@ -6,6 +6,11 @@ const nextConfig: NextConfig = {
   skipTrailingSlashRedirect: true,
   experimental: {
     optimizePackageImports: ["lucide-react", "posthog-js"],
+    // Cache soft-navigated RSC payloads client-side (repeat visits feel instant).
+    staleTimes: {
+      dynamic: 60,
+      static: 300,
+    },
   },
   async rewrites() {
     const host =

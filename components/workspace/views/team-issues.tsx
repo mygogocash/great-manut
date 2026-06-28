@@ -13,14 +13,10 @@ import { IssueRow } from "@/components/issues/issue-row";
 import { STATUSES } from "@/components/shared/issue-meta";
 import { StatusIcon } from "@/components/shared/status-icon";
 
-/**
- * Team issues list — the foundation vertical slice. Track A adds the board
- * view, filtering, and saved views on top of this route's sibling pages.
- */
-export default function TeamIssuesPage() {
-  const params = useParams<{ orgSlug: string; teamId: string }>();
+/** Team issues list view. */
+export function TeamIssuesView({ teamId }: { teamId: Id<"teams"> }) {
+  const params = useParams<{ orgSlug: string }>();
   const router = useRouter();
-  const teamId = params.teamId as Id<"teams">;
   const team = useQuery(api.teams.get, { teamId });
   const issues = useQuery(api.issues.listByTeam, { teamId });
   const { openCreateIssue } = useCommands();
@@ -85,7 +81,11 @@ export default function TeamIssuesPage() {
         {issues.length === 0 ? (
           <div className="flex flex-col items-center gap-2 py-32 text-center">
             <p className="text-sm text-muted-foreground">
-              No issues yet. Press <kbd className="rounded border bg-muted px-1 font-mono text-xs">C</kbd> to create one.
+              No issues yet. Press{" "}
+              <kbd className="rounded border bg-muted px-1 font-mono text-xs">
+                C
+              </kbd>{" "}
+              to create one.
             </p>
           </div>
         ) : (
