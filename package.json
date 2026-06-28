@@ -72,7 +72,7 @@
     "@convex-dev/eslint-plugin": "^2.0.0",
     "@opennextjs/cloudflare": "^1.20.1",
     "@tailwindcss/postcss": "^4.3.1",
-    "@types/node": "^22.20.0",
+    "@types/node": "^26.0.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "babel-plugin-react-compiler": "1.0.0",
