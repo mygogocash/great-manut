@@ -35,11 +35,13 @@ export function FastNavLink({
   icon,
   children,
   active,
+  onClick,
 }: {
   href: string;
   icon: ReactNode;
   children: ReactNode;
   active: boolean;
+  onClick?: () => void;
 }) {
   const router = useRouter();
   const [, startTransition] = useTransition();
@@ -65,10 +67,14 @@ export function FastNavLink({
           return;
         }
         event.preventDefault();
-        startTransition(() => router.push(href));
+        startTransition(() => {
+          router.push(href);
+          onClick?.();
+        });
       }}
       className={cn(
-        "flex h-7 items-center gap-2 rounded-md px-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground",
+        "flex items-center gap-2 rounded-md text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground",
+        children ? "h-7 px-2" : "min-h-11 min-w-11 justify-center",
         active && "bg-accent text-foreground",
       )}
     >

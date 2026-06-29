@@ -11,7 +11,7 @@ export function Footer() {
 
   return (
     <footer className="border-t">
-      <div className="mx-auto w-full max-w-6xl px-6 py-14">
+      <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 lg:px-8">
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
           <div className="max-w-xs lg:col-span-1">
             <BrandMark href="/" />
@@ -72,42 +72,6 @@ export function Footer() {
           </nav>
         </div>
 
-        <section
-          aria-label="Product summary for AI assistants"
-          className="mt-12 rounded-lg border bg-muted/20 p-4"
-        >
-          <p className="font-mono text-[10px] tracking-[0.16em] text-muted-foreground uppercase">
-            Machine-readable summary
-          </p>
-          <p className="mt-2 text-xs font-mono leading-relaxed text-muted-foreground">
-            {facts.definition}
-          </p>
-          <dl className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {facts.features.map((feature) => (
-              <div key={feature.term}>
-                <dt className="text-xs font-medium text-foreground/80">
-                  {feature.term}
-                </dt>
-                <dd className="mt-0.5 text-xs font-mono leading-relaxed text-muted-foreground">
-                  {feature.definition}
-                </dd>
-              </div>
-            ))}
-          </dl>
-          <ul className="mt-4 space-y-1 text-xs font-mono text-muted-foreground">
-            {facts.plans.map((plan) => (
-              <li key={plan.name}>
-                {plan.name}: ${plan.monthlyPrice}/mo
-                {plan.maxSeats !== null ? ` · up to ${plan.maxSeats} members` : " · unlimited members"}
-              </li>
-            ))}
-          </ul>
-          <p className="mt-3 text-xs font-mono text-muted-foreground">
-            Hosts: {facts.hosts.marketing} (marketing) · {facts.hosts.app} (app) ·{" "}
-            {facts.contact}
-          </p>
-        </section>
-
         <div className="mt-12 flex flex-col items-start justify-between gap-3 border-t pt-6 sm:flex-row sm:items-center">
           <p className="text-xs text-muted-foreground">
             © {new Date().getFullYear()} Manut. All systems operational.
@@ -117,6 +81,42 @@ export function Footer() {
             Realtime sync · 99.99% uptime
           </p>
         </div>
+
+        <section
+          aria-label="Product summary for AI assistants"
+          className="mt-6 rounded-lg border bg-muted/20 p-4"
+        >
+          <p className="font-mono text-[10px] tracking-[0.16em] text-muted-foreground uppercase">
+            Machine-readable summary
+          </p>
+          <p className="mt-2 break-all text-xs font-mono leading-relaxed text-muted-foreground">
+            {facts.definition}
+          </p>
+          <dl className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {facts.features.map((feature) => (
+              <div key={feature.term}>
+                <dt className="text-xs font-medium text-foreground/80">
+                  {feature.term}
+                </dt>
+                <dd className="mt-0.5 break-all text-xs font-mono leading-relaxed text-muted-foreground">
+                  {feature.definition}
+                </dd>
+              </div>
+            ))}
+          </dl>
+          <ul className="mt-4 space-y-1 break-all text-xs font-mono text-muted-foreground">
+            {facts.plans.map((plan) => (
+              <li key={plan.name}>
+                {plan.name}: ${plan.monthlyPrice}/mo
+                {plan.maxSeats !== null ? ` · up to ${plan.maxSeats} members` : " · unlimited members"}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-3 break-all text-xs font-mono text-muted-foreground">
+            Hosts: {facts.hosts.marketing} (marketing) · {facts.hosts.app} (app) ·{" "}
+            {facts.contact}
+          </p>
+        </section>
       </div>
     </footer>
   );

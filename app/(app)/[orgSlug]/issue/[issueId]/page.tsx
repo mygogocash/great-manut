@@ -16,6 +16,14 @@ import {
   issueDetailMainSlots,
   issueDetailSidebarSlots,
 } from "@/components/issue-detail/slots";
+import {
+  SecondaryPanelAside,
+  SecondaryPanelSheet,
+  SecondaryPanelTrigger,
+  useSecondaryPanel,
+} from "@/components/shell/secondary-panel";
+import { CONTENT_PX } from "@/lib/responsive";
+import { cn } from "@/lib/utils";
 
 /**
  * Issue detail — foundation skeleton with extension slots. Track C fills in
@@ -70,8 +78,19 @@ function IssueDetail({
   const updateIssue = useMutation(api.issues.update);
   const [title, setTitle] = useState(issue.title);
   const [description, setDescription] = useState(issue.description ?? "");
+  const { open: propertiesOpen, setOpen: setPropertiesOpen } = useSecondaryPanel();
 
   const identifier = `${team.key}-${issue.number}`;
+
+  const propertiesPanel = (
+    <>
+      <IssueProperties issue={issue} />
+      {issueDetailSidebarSlots.length > 0 && <Separator className="my-4" />}
+      {issueDetailSidebarSlots.map((Slot, index) => (
+        <Slot key={index} issue={issue} team={team} />
+      ))}
+    </>
+  );
 
   const saveTitle = () => {
     const trimmed = title.trim();
@@ -98,18 +117,23 @@ function IssueDetail({
       <header className="flex h-12 shrink-0 items-center gap-1.5 border-b px-4 text-sm">
         <Link
           href={`/${orgSlug}/team/${team._id}`}
-          className="text-muted-foreground hover:text-foreground"
+          className="truncate text-muted-foreground hover:text-foreground"
         >
           {team.name}
         </Link>
-        <ChevronRight className="size-3.5 text-muted-foreground" />
+        <ChevronRight className="size-3.5 shrink-0 text-muted-foreground" />
         <span className="font-mono text-xs text-muted-foreground">
           {identifier}
         </span>
+        <SecondaryPanelTrigger
+          className="ml-auto"
+          label="Properties"
+          onClick={() => setPropertiesOpen(true)}
+        />
       </header>
       <div className="flex min-h-0 flex-1">
         <ScrollArea className="flex-1">
-          <div className="mx-auto flex max-w-3xl flex-col gap-4 px-8 py-8">
+          <div className={cn("mx-auto flex max-w-3xl flex-col gap-4 py-8", CONTENT_PX)}>
             <Textarea
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -135,17 +159,17 @@ function IssueDetail({
             ))}
           </div>
         </ScrollArea>
-        <aside className="w-72 shrink-0 border-l p-4">
-          <h3 className="mb-3 text-xs font-medium text-muted-foreground">
-            Properties
-          </h3>
-          <IssueProperties issue={issue} />
-          {issueDetailSidebarSlots.length > 0 && <Separator className="my-4" />}
-          {issueDetailSidebarSlots.map((Slot, index) => (
-            <Slot key={index} issue={issue} team={team} />
-          ))}
-        </aside>
+        <SecondaryPanelAside title="Properties">
+          {propertiesPanel}
+        </SecondaryPanelAside>
       </div>
+      <SecondaryPanelSheet
+        title="Properties"
+        open={propertiesOpen}
+        onOpenChange={setPropertiesOpen}
+      >
+        {propertiesPanel}
+      </SecondaryPanelSheet>
     </>
   );
 }

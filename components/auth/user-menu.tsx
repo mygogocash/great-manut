@@ -53,7 +53,7 @@ export function UserMenu() {
   );
 }
 
-export function OrganizationSwitcher() {
+export function OrganizationSwitcher({ compact = false }: { compact?: boolean }) {
   const router = useRouter();
   const currentOrg = useQuery(api.organizations.current);
   const workspaces = useQuery(api.organizations.listMine);
@@ -61,8 +61,17 @@ export function OrganizationSwitcher() {
 
   if (!currentOrg || !workspaces) {
     return (
-      <Button variant="ghost" size="sm" className="max-w-44 justify-start px-2" disabled>
-        <span className="truncate text-sm">Loading…</span>
+      <Button
+        variant="ghost"
+        size={compact ? "icon" : "sm"}
+        className={compact ? "min-h-11 min-w-11" : "max-w-44 justify-start px-2"}
+        disabled
+      >
+        {compact ? (
+          <span className="text-xs">…</span>
+        ) : (
+          <span className="truncate text-sm">Loading…</span>
+        )}
       </Button>
     );
   }
@@ -70,9 +79,26 @@ export function OrganizationSwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="max-w-44 justify-between gap-1 px-2">
-          <span className="truncate text-sm font-medium">{currentOrg.name}</span>
-          <ChevronsUpDown className="size-3.5 shrink-0 opacity-50" />
+        <Button
+          variant="ghost"
+          size={compact ? "icon" : "sm"}
+          className={
+            compact
+              ? "min-h-11 min-w-11"
+              : "max-w-44 justify-between gap-1 px-2"
+          }
+          aria-label={compact ? `Switch workspace (${currentOrg.name})` : undefined}
+        >
+          {compact ? (
+            <span className="flex size-7 items-center justify-center rounded bg-primary/15 text-xs font-semibold text-primary">
+              {currentOrg.name.slice(0, 1).toUpperCase()}
+            </span>
+          ) : (
+            <>
+              <span className="truncate text-sm font-medium">{currentOrg.name}</span>
+              <ChevronsUpDown className="size-3.5 shrink-0 opacity-50" />
+            </>
+          )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-56">

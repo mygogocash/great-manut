@@ -11,34 +11,55 @@ const SETTINGS_PAGES = [
   { label: "Automations", segment: "automations", icon: Zap },
 ] as const;
 
-/** Left-hand navigation for the workspace settings section. */
+/** Settings navigation — horizontal tabs below lg, side nav at lg+. */
 export function SettingsNav() {
   const params = useParams<{ orgSlug: string }>();
   const pathname = usePathname();
   const base = `/${params.orgSlug}/settings`;
 
   return (
-    <nav className="flex w-44 shrink-0 flex-col gap-0.5 border-r p-3">
-      <span className="px-2 pb-1 text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
-        Workspace
-      </span>
-      {SETTINGS_PAGES.map(({ label, segment, icon: Icon }) => {
-        const href = `${base}/${segment}`;
-        const active = pathname.startsWith(href);
-        return (
-          <Link
-            key={segment}
-            href={href}
-            className={cn(
-              "flex h-7 items-center gap-2 rounded-md px-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground",
-              active && "bg-accent text-foreground"
-            )}
-          >
-            <Icon className="size-4" />
-            {label}
-          </Link>
-        );
-      })}
-    </nav>
+    <>
+      <nav className="flex shrink-0 gap-1 overflow-x-auto border-b px-3 py-2 lg:hidden">
+        {SETTINGS_PAGES.map(({ label, segment, icon: Icon }) => {
+          const href = `${base}/${segment}`;
+          const active = pathname.startsWith(href);
+          return (
+            <Link
+              key={segment}
+              href={href}
+              className={cn(
+                "flex min-h-11 shrink-0 items-center gap-2 rounded-md px-3 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground",
+                active && "bg-accent text-foreground",
+              )}
+            >
+              <Icon className="size-4" />
+              {label}
+            </Link>
+          );
+        })}
+      </nav>
+      <nav className="hidden w-44 shrink-0 flex-col gap-0.5 border-r p-3 lg:flex">
+        <span className="px-2 pb-1 text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
+          Workspace
+        </span>
+        {SETTINGS_PAGES.map(({ label, segment, icon: Icon }) => {
+          const href = `${base}/${segment}`;
+          const active = pathname.startsWith(href);
+          return (
+            <Link
+              key={segment}
+              href={href}
+              className={cn(
+                "flex h-7 items-center gap-2 rounded-md px-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground",
+                active && "bg-accent text-foreground",
+              )}
+            >
+              <Icon className="size-4" />
+              {label}
+            </Link>
+          );
+        })}
+      </nav>
+    </>
   );
 }

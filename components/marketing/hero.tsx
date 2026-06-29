@@ -19,17 +19,20 @@ export function Hero() {
         className="absolute inset-x-0 top-0 -z-10 h-[28rem] bg-[radial-gradient(ellipse_60%_100%_at_50%_0%,color-mix(in_oklch,var(--foreground),transparent_94%),transparent)]"
       />
 
-      <div className="mx-auto flex w-full max-w-6xl flex-col items-center px-6 pt-20 text-center md:pt-28">
+      <div className="mx-auto flex w-full max-w-6xl flex-col items-center px-4 pt-20 text-center sm:px-6 md:pt-28 lg:px-8">
         <Link
           href="/pricing"
-          className="group flex items-center gap-2 rounded-full border bg-background/60 py-1 pr-3 pl-1.5 text-xs text-muted-foreground backdrop-blur transition-colors hover:border-ring/60 hover:text-foreground"
+          className="group flex max-w-full flex-wrap items-center justify-center gap-x-2 gap-y-1 rounded-full border bg-background/60 py-1 pr-3 pl-1.5 text-xs text-muted-foreground backdrop-blur transition-colors hover:border-ring/60 hover:text-foreground"
         >
           <span className="flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-medium text-primary-foreground">
             <Sparkles className="size-2.5" />
             Suite
           </span>
-          Plan · Knowledge · Service · AI — see pricing
-          <ArrowRight className="size-3 transition-transform group-hover:translate-x-0.5" />
+          <span className="hidden truncate sm:inline">
+            Plan · Knowledge · Service · AI — see pricing
+          </span>
+          <span className="sm:hidden">See pricing</span>
+          <ArrowRight className="size-3 shrink-0 transition-transform group-hover:translate-x-0.5" />
         </Link>
 
         <h1
@@ -64,7 +67,7 @@ export function Hero() {
         </p>
       </div>
 
-      <div className="relative mx-auto mt-14 w-full max-w-6xl px-6 md:mt-20">
+      <div className="relative mx-auto mt-14 w-full max-w-6xl px-4 sm:px-6 md:mt-20 lg:px-8">
         <MockApp />
         {/* Fade the bottom of the screenshot into the next section. */}
         <div

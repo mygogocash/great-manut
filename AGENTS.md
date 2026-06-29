@@ -33,6 +33,14 @@ This repo is built **foundation-first, then in parallel tracks**. Each track is 
 - **Activity logging**: any mutation that changes an issue should call `logActivity` from `convex/lib/activity.ts`.
 - **UI conventions**: shadcn/ui components from `components/ui/`, lucide icons, Linear-style density (small text, h-7/h-9 rows), dark theme default with light mode via `next-themes`. Shared primitives in `components/shared/`.
 - **Routes:** Workspace sections use client-side routing at `app/(app)/[orgSlug]/[[...section]]/page.tsx` via `lib/workspace-routes.ts` and `components/workspace/workspace-route-view.tsx`. Public customer portal: `app/portal/[orgSlug]/page.tsx` (`/portal/*` is public in `middleware.ts`). Issue detail remains a dedicated route under `team/[teamId]/issue/[issueId]`.
+- **Responsive layout** (see `docs/specs/2026-06-28-responsive-plan.md`):
+  - Breakpoints: XS (&lt;640), SM (640–767), MD (768–1023), LG (1024+), XL (1280+).
+  - App content padding: `CONTENT_PX` from `lib/responsive.ts` (`px-4 sm:px-6 lg:px-8`).
+  - Dual fixed rails (sidebar + secondary panel) only at **lg+ (≥1024px)**; below lg use Sheet/drawer for secondary panels.
+  - Shell: mobile Sheet nav (&lt;md), icon rail (md–lg−1), full sidebar (lg+). See `workspace-shell.tsx` + `app-sidebar.tsx` variants.
+  - Reusable secondary panel: `components/shell/secondary-panel.tsx` (`useSecondaryPanel`, `SecondaryPanelAside`, `SecondaryPanelSheet`, `SecondaryPanelTrigger`).
+  - Mobile chrome touch targets: min 44px (`min-h-11 min-w-11`).
+  - Marketing: hamburger Sheet nav below md in `components/marketing/marketing-header.tsx`.
 
 ## Track ownership map
 
@@ -114,15 +122,15 @@ Do not start dev servers or push to the Convex deployment from a worktree. From 
 ## Reference
 
 - Convex dev deployment: `sincere-oriole-287` (project `great-manut`, team `kunanon-jarat`). Main checkout runs `npx convex dev`.
-- Production: https://app.manut.xyz (Worker `great-manut`, GoGoCash Cloudflare account).
+- Production: https://app.manut.xyz — Cloudflare Worker `great-manut` (GoGoCash account), Workers Builds production branch **`main`**.
 - Design doc: `docs/specs/2026-06-12-linear-clone-design.md`.
 
 ## Learned User Preferences
 
 ## Learned Workspace Facts
 
-- Production frontend deploys on push to `main` via GitHub Actions (`Deploy Cloudflare` workflow); live at https://app.manut.xyz (workspace) and https://manut.xyz (marketing) on Cloudflare Worker `great-manut`.
-- Frontend deploys via OpenNext (`@opennextjs/cloudflare`) on Cloudflare Workers; Cloudflare Workers Builds should use `pnpm run build:cf` — `build` runs OpenNext which invokes `next build` internally (avoid recursion).
+- Production frontend deploys on push to **`main`** via **Cloudflare Workers Builds** (dashboard: production branch `main`, build `pnpm run build`, deploy `npx wrangler deploy`, non-production builds disabled). Live at https://app.manut.xyz and https://manut.xyz on Worker `great-manut`. GitHub default branch is `preview` — promote via merge `preview` → `main`. GHA `Deploy Cloudflare` also runs on `main`; disable one path to avoid double-deploy.
+- Frontend deploys via OpenNext (`@opennextjs/cloudflare`) on Cloudflare Workers. `pnpm run build` runs OpenNext (which invokes `next build` internally — do not point OpenNext `buildCommand` back at `pnpm run build`). Use `npx wrangler deploy -c wrangler.deploy.toml` if the plain deploy command fails (DO migration config).
 - `NEXT_PUBLIC_CONVEX_URL` and `NEXT_PUBLIC_CONVEX_SITE_URL` must be in `wrangler.toml` `[vars]` and inlined at build time — missing runtime vars cause HTTP 500 on the Worker.
 - Auth uses Convex Auth (`@convex-dev/auth`) with email/password; Clerk was removed — ignore stale Clerk references elsewhere in this file.
 - Edge auth middleware lives in `middleware.ts` (not Next 16 `proxy.ts`) for OpenNext on Cloudflare; `/ingest` and `/portal/*` must stay public routes.
@@ -131,5 +139,5 @@ Do not start dev servers or push to the Convex deployment from a worktree. From 
 - Workspace sidebar uses client-side routing via `lib/workspace-routes.ts` and `components/workspace/workspace-route-view.tsx` at `app/(app)/[orgSlug]/[[...section]]/page.tsx` (Projects, Cycles, Teams, AI, Docs, Discovery, Service, Search).
 - PR #15 merged the Atlassian-style suite (Tracks G–M): docs, unified search, discovery, service desk, epics/roadmaps, automations, suite billing gates, and marketing positioning. Delegation spec: `docs/specs/2026-06-27-atlassian-suite-delegation-spec.md`.
 - Demo billing: org admins switch plans via `organizations.updatePlan` (no Stripe/Clerk Checkout). Suite gates in `convex/lib/limits.ts`: `hasDocsWrite`, `hasDiscovery`, `hasServiceDesk`, `hasAutomations` (plus matching `assert*` helpers).
-- GitHub repo is `mygogocash/great-manut`; `main` branch protection requires CI checks (Lint, Typecheck, Build, Security audit) and one PR review.
+- GitHub repo is `mygogocash/great-manut`; default branch `preview`, production `main`. `main` branch protection requires CI checks (Lint, Typecheck, Build, Security audit) and one PR review.
 - PostHog analytics via `posthog-js` + `instrumentation-client.ts`; events proxy through `/ingest` rewrites in `next.config.ts`. Set `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` at build time (`.env.local` + Cloudflare/GitHub Actions env). B2B org grouping uses PostHog `organization` group from `organizations.current`.
