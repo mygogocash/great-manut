@@ -211,6 +211,8 @@ Set the secrets the backend needs **on the Convex deployment** (not in `.env.loc
 
 ```bash
 npx convex env set OPENAI_API_KEY sk-...
+# Required for BYOK AI (encrypts saved provider keys) — any long random string:
+npx convex env set AI_CREDENTIALS_SECRET "$(openssl rand -base64 32)"
 npx convex env set SITE_URL http://localhost:3000
 # OAuth (optional) — register callback URLs at <your-deployment>.convex.site/api/auth/callback/{github,google}
 npx convex env set AUTH_GITHUB_ID ...
@@ -265,18 +267,24 @@ All tables live in [`convex/schema.ts`](convex/schema.ts) with a flat, relationa
 
 The frontend is built with **OpenNext** and deployed to **Cloudflare Workers**; the backend deploys to **Convex**.
 
-```bash
-# Backend (Convex) — from the main checkout
-pnpm run deploy:convex      # or: npx convex deploy
+> ⚠️ The committed `pnpm run deploy:convex` script and the `wrangler*.toml` configs are wired to **this project's** Convex deployment and Cloudflare account/routes. If you're self-hosting a fork, **don't** use them as-is — follow the generic path below and point everything at **your own** resources.
 
-# Frontend (Cloudflare Workers)
-pnpm run deploy             # runs the OpenNext build + wrangler deploy
+```bash
+# Backend — deploy YOUR Convex production deployment
+npx convex deploy
+# ...then set OPENAI_API_KEY, AI_CREDENTIALS_SECRET, SITE_URL, OAuth + Stripe
+# secrets on the production deployment too (npx convex env set ...).
+
+# Frontend — first edit wrangler.toml for your own account_id, routes, and
+# [vars] (NEXT_PUBLIC_CONVEX_URL / NEXT_PUBLIC_CONVEX_SITE_URL = your deployment)
+pnpm run build:cf
+npx wrangler deploy
 ```
 
 Notes:
 
 - `NEXT_PUBLIC_CONVEX_URL` and `NEXT_PUBLIC_CONVEX_SITE_URL` must be present in `wrangler.toml` `[vars]` — they are inlined into the client bundle at build time. Missing runtime vars cause HTTP 500s on the Worker.
-- Set `OPENAI_API_KEY` (and any OAuth/`SITE_URL`/Stripe secrets) on the **Convex production deployment**.
+- Set `OPENAI_API_KEY`, `AI_CREDENTIALS_SECRET` (for BYOK), and any OAuth/`SITE_URL`/Stripe secrets on the **Convex production deployment**.
 - CI/CD: Cloudflare Workers Builds deploys the frontend on push, and `CONVEX_DEPLOY_KEY` is used to deploy Convex from CI.
 
 ---
