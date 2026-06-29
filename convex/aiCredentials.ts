@@ -6,7 +6,7 @@ import {
   aiProviderValidator,
   embeddingProviderValidator,
 } from "./schema";
-import { encryptSecret, maskApiKey } from "./lib/crypto";
+import { encryptSecret } from "./lib/crypto";
 import { validateProviderKey } from "./lib/aiProviderValidate";
 
 const credentialSummaryValidator = v.object({
@@ -75,7 +75,6 @@ export const getSettings = orgQuery({
     let maskedKey = "";
     if (credential) {
       // Never decrypt for display — mask from stored prefix metadata only.
-      maskedKey = maskApiKey("sk-placeholder");
       maskedKey = `${credential.provider} key saved`;
     }
 
