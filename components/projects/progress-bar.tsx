@@ -2,8 +2,8 @@ import { cn } from "@/lib/utils";
 import { completionPercent, IssueProgress } from "./project-meta";
 
 /**
- * Segmented issue-progress bar: done (emerald) → in review (blue) →
- * in progress (yellow) over a muted track. Canceled issues are excluded.
+ * Segmented issue-progress bar: done (success) → in review (info) →
+ * in progress (warning) over a muted track. Canceled issues are excluded.
  */
 export function IssueProgressBar({
   progress,
@@ -22,15 +22,15 @@ export function IssueProgressBar({
     <div className={cn("flex items-center gap-2", className)}>
       <div className="flex h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
         <div
-          className="bg-emerald-500"
+          className="bg-success"
           style={{ width: `${widthOf(progress.done)}%` }}
         />
         <div
-          className="bg-blue-500"
+          className="bg-info"
           style={{ width: `${widthOf(progress.in_review)}%` }}
         />
         <div
-          className="bg-yellow-500"
+          className="bg-warning"
           style={{ width: `${widthOf(progress.in_progress)}%` }}
         />
       </div>

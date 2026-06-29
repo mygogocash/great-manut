@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { BrandMark } from "@/components/shared/brand-mark";
+import { ThemeToggle } from "@/components/shell/theme-toggle";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,8 +18,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { formatDayWithYear } from "@/components/projects/dates";
 import {
   parseRequestNumber,
+  serviceRequestStatusClass,
   serviceRequestStatusLabel,
-  type ServiceRequestStatus,
 } from "@/components/service-desk/service-desk-meta";
 import { CONTENT_PX } from "@/lib/responsive";
 
@@ -33,25 +34,6 @@ function getRateLimitKey(): string {
     sessionStorage.setItem(storageKey, key);
   }
   return key;
-}
-
-function statusBadgeClass(status: ServiceRequestStatus): string {
-  switch (status) {
-    case "new":
-      return "bg-blue-500/15 text-blue-400";
-    case "waiting":
-      return "bg-amber-500/15 text-amber-400";
-    case "in_progress":
-      return "bg-violet-500/15 text-violet-400";
-    case "resolved":
-      return "bg-emerald-500/15 text-emerald-400";
-    case "closed":
-      return "bg-muted text-muted-foreground";
-    default: {
-      const _exhaustive: never = status;
-      return _exhaustive;
-    }
-  }
 }
 
 function SubmitForm({
@@ -105,7 +87,7 @@ function SubmitForm({
   if (success) {
     return (
       <div className="flex flex-col items-center gap-3 py-8 text-center">
-        <CheckCircle2 className="size-10 text-emerald-500" />
+        <CheckCircle2 className="size-10 text-success" />
         <div>
           <p className="text-sm font-medium">Request submitted</p>
           <p className="mt-1 text-xs text-muted-foreground">
@@ -244,7 +226,10 @@ function TrackForm({ orgSlug }: { orgSlug: string }) {
             <span className="font-mono text-xs text-muted-foreground">
               {tracked.displayNumber}
             </span>
-            <Badge variant="secondary" className={statusBadgeClass(tracked.status)}>
+            <Badge
+              variant="secondary"
+              className={serviceRequestStatusClass(tracked.status)}
+            >
               {serviceRequestStatusLabel(tracked.status)}
             </Badge>
           </div>
@@ -286,8 +271,11 @@ export default function PortalPage() {
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <header className={`border-b py-4 ${CONTENT_PX}`}>
+      <header
+        className={`flex items-center justify-between border-b py-4 ${CONTENT_PX}`}
+      >
         <BrandMark href="/" />
+        <ThemeToggle />
       </header>
       <main className={`mx-auto flex w-full max-w-lg flex-1 flex-col py-10 ${CONTENT_PX}`}>
         <div className="mb-8 text-center">

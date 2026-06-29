@@ -200,15 +200,15 @@ function ProjectDetail({
               <IssueProgressBar progress={progress} />
               <div className="flex flex-wrap gap-x-4 gap-y-1 pt-1 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1.5">
-                  <span className="size-2 rounded-full bg-emerald-500" />
+                  <span className="size-2 rounded-full bg-success" />
                   {progress.done} done
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className="size-2 rounded-full bg-blue-500" />
+                  <span className="size-2 rounded-full bg-info" />
                   {progress.in_review} in review
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className="size-2 rounded-full bg-yellow-500" />
+                  <span className="size-2 rounded-full bg-warning" />
                   {progress.in_progress} in progress
                 </span>
                 <span className="flex items-center gap-1.5">

@@ -12,7 +12,12 @@ export function ThemeToggle() {
       variant="ghost"
       size="icon"
       className="size-7"
-      onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+      onClick={() => {
+        // resolvedTheme is undefined until next-themes hydrates; ignore clicks
+        // until then so a click during that window can't mis-toggle.
+        if (!resolvedTheme) return;
+        setTheme(resolvedTheme === "dark" ? "light" : "dark");
+      }}
       aria-label="Toggle theme"
     >
       <Sun className="size-4 dark:hidden" />

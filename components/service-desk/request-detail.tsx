@@ -39,30 +39,12 @@ import { CONTENT_PX } from "@/lib/responsive";
 import { cn } from "@/lib/utils";
 import {
   SERVICE_REQUEST_STATUSES,
+  serviceRequestStatusClass,
   serviceRequestStatusLabel,
   type ServiceRequestStatus,
 } from "./service-desk-meta";
 
 const UNASSIGNED = "unassigned";
-
-function statusBadgeClass(status: ServiceRequestStatus): string {
-  switch (status) {
-    case "new":
-      return "bg-blue-500/15 text-blue-400";
-    case "waiting":
-      return "bg-amber-500/15 text-amber-400";
-    case "in_progress":
-      return "bg-violet-500/15 text-violet-400";
-    case "resolved":
-      return "bg-emerald-500/15 text-emerald-400";
-    case "closed":
-      return "bg-muted text-muted-foreground";
-    default: {
-      const _exhaustive: never = status;
-      return _exhaustive;
-    }
-  }
-}
 
 function PropertyRow({
   label,
@@ -227,7 +209,7 @@ export function ServiceRequestDetail({
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge
                     variant="secondary"
-                    className={cn("text-[10px] font-normal", statusBadgeClass(request.status))}
+                    className={cn("text-[10px] font-normal", serviceRequestStatusClass(request.status))}
                   >
                     {serviceRequestStatusLabel(request.status)}
                   </Badge>

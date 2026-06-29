@@ -15,9 +15,9 @@ const config: Record<
 > = {
   backlog: { icon: CircleDashed, className: "text-muted-foreground" },
   todo: { icon: Circle, className: "text-muted-foreground" },
-  in_progress: { icon: CircleDot, className: "text-yellow-500" },
-  in_review: { icon: CircleEllipsis, className: "text-blue-500" },
-  done: { icon: CircleCheck, className: "text-emerald-500" },
+  in_progress: { icon: CircleDot, className: "text-warning" },
+  in_review: { icon: CircleEllipsis, className: "text-info" },
+  done: { icon: CircleCheck, className: "text-success" },
   canceled: { icon: CircleX, className: "text-muted-foreground/60" },
 };
 

@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server";
 import { Providers } from "@/components/providers";
-import { Toaster } from "@/components/ui/sonner";
 import { metadataBase } from "@/lib/seo";
 import "./globals.css";
 
@@ -53,8 +52,9 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <body className="min-h-full flex flex-col">
+          {/* Theme is provided per route group via <SurfaceThemeProvider>, which
+              also renders the surface-matched <Toaster/>. */}
           <Providers>{children}</Providers>
-          <Toaster />
         </body>
       </html>
     </ConvexAuthNextjsServerProvider>
