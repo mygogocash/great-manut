@@ -291,9 +291,9 @@ function MockBoardCard({
     <div
       className={cn(
         "cursor-grab space-y-2 rounded-lg border bg-card p-2.5 transition-[box-shadow,transform,border-color] active:cursor-grabbing",
-        "hover:border-ring/50 hover:shadow-md hover:shadow-black/10",
-        dragging && "-rotate-2 border-ring shadow-lg shadow-black/20",
-        overlay && "rotate-2 shadow-xl shadow-black/25",
+        "hover:border-ring/50 hover:shadow-md hover:shadow-black/10 dark:hover:shadow-black/40",
+        dragging && "-rotate-2 border-ring shadow-lg shadow-black/20 dark:shadow-black/50",
+        overlay && "rotate-2 shadow-xl shadow-black/25 dark:shadow-black/50",
         selected && "border-primary ring-2 ring-primary/30",
       )}
     >

@@ -45,7 +45,7 @@ export function MockIssueDetail({ className }: { className?: string }) {
               <span className="text-[11px] text-muted-foreground">2h ago</span>
             </div>
             <p className="mt-1.5 text-xs text-muted-foreground">
-              <span className="rounded bg-blue-500/10 px-1 font-medium text-blue-500">
+              <span className="rounded bg-info/10 px-1 font-medium text-info">
                 @Ada
               </span>{" "}
               repro’d this on a 60-card column — fix in review, demo in the
@@ -53,7 +53,7 @@ export function MockIssueDetail({ className }: { className?: string }) {
             </p>
           </div>
           <p className="flex items-center gap-2 text-[11px] text-muted-foreground">
-            <span className="size-1.5 rounded-full bg-yellow-500" />
+            <span className="size-1.5 rounded-full bg-warning" />
             {MOCK_PEOPLE.ada} moved from Todo to In Progress · 2h ago
           </p>
         </div>
