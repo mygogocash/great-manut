@@ -19,6 +19,7 @@ import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { IssueProgressBar } from "@/components/projects/progress-bar";
+import { DEFAULT_PROJECT_COLOR } from "@/components/projects/project-meta";
 import { cn } from "@/lib/utils";
 
 function epicProgressPercent(doneCount: number, issueCount: number): number {
@@ -61,7 +62,7 @@ function EpicRow({
     <div className="flex items-center gap-3 border-b px-4 py-3 last:border-b-0">
       <span
         className="size-2.5 shrink-0 rounded-full"
-        style={{ backgroundColor: epic.color ?? "#5e6ad2" }}
+        style={{ backgroundColor: epic.color ?? DEFAULT_PROJECT_COLOR }}
       />
       <div className="min-w-0 flex-1">
         <div className="flex items-center justify-between gap-2">

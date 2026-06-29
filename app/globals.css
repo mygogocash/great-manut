@@ -73,11 +73,11 @@
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
   /* Status tokens (light): tuned darker so they read on a near-white surface. */
-  --success: oklch(0.596 0.145 163.225); /* ~emerald-600 */
+  --success: oklch(0.508 0.118 165.612); /* ~emerald-700 */
   --success-foreground: oklch(0.985 0 0);
-  --warning: oklch(0.666 0.179 58.318); /* ~amber-600 */
+  --warning: oklch(0.555 0.163 48.998); /* ~amber-700 */
   --warning-foreground: oklch(0.985 0 0);
-  --info: oklch(0.546 0.245 262.881); /* ~blue-600 */
+  --info: oklch(0.488 0.217 264.376); /* ~blue-700 */
   --info-foreground: oklch(0.985 0 0);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
