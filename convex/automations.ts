@@ -11,7 +11,6 @@ import {
   summarizeAction,
   summarizeTrigger,
 } from "./lib/automationSchema";
-import { assertHasAutomations } from "./lib/limits";
 
 const ruleShape = {
   _id: v.id("automationRules"),
@@ -53,8 +52,6 @@ export const listRules = orgQuery({
   args: {},
   returns: v.array(v.object(ruleListShape)),
   handler: async (ctx) => {
-    assertHasAutomations(ctx.org);
-
     const rules = await ctx.db
       .query("automationRules")
       .withIndex("by_org", (q) => q.eq("orgId", ctx.org._id))
@@ -87,8 +84,6 @@ export const createRule = orgAdminMutation({
   },
   returns: v.id("automationRules"),
   handler: async (ctx, args) => {
-    assertHasAutomations(ctx.org);
-
     const name = args.name.trim();
     if (!name) {
       throw new Error("Rule name is required");
@@ -116,8 +111,6 @@ export const setEnabled = orgAdminMutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    assertHasAutomations(ctx.org);
-
     const rule = await getOrgRule(ctx, ctx.org._id, args.ruleId);
     await ctx.db.patch(rule._id, { enabled: args.enabled });
     return null;
@@ -128,8 +121,6 @@ export const removeRule = orgAdminMutation({
   args: { ruleId: v.id("automationRules") },
   returns: v.null(),
   handler: async (ctx, args) => {
-    assertHasAutomations(ctx.org);
-
     const rule = await getOrgRule(ctx, ctx.org._id, args.ruleId);
     await ctx.db.delete(rule._id);
     return null;

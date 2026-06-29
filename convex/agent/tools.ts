@@ -1,10 +1,12 @@
+"use node";
+
 import { createTool, type ToolCtx } from "@convex-dev/agent";
 import { jsonSchema } from "ai";
 import { Infer } from "convex/values";
 import { internal } from "../_generated/api";
 import { DataModel, Id } from "../_generated/dataModel";
 import { issueSummaryValidator } from "./data";
-import { embedText } from "./embeddings";
+import { embedText } from "./embeddingsActions";
 
 /**
  * Org-scoped tools for the Vector agent.

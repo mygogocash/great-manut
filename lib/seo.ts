@@ -8,9 +8,8 @@ import {
   PRODUCT_URLS,
 } from "@/lib/product-facts";
 import {
-  ENTERPRISE_PLAN,
+  BUSINESS_PLAN_DEF,
   FREE_PLAN,
-  PRO_PLAN,
 } from "@/lib/plans";
 import { marketingUrl } from "@/lib/site-urls";
 
@@ -215,14 +214,9 @@ export function buildPricingProductJsonLd(): JsonLd {
         description: FREE_PLAN.tagline,
       }),
       pricingOffer({
-        name: PRO_PLAN.name,
-        price: PRO_PLAN.monthlyPrice,
-        description: PRO_PLAN.tagline,
-      }),
-      pricingOffer({
-        name: ENTERPRISE_PLAN.name,
-        price: ENTERPRISE_PLAN.monthlyPrice,
-        description: ENTERPRISE_PLAN.tagline,
+        name: BUSINESS_PLAN_DEF.name,
+        price: BUSINESS_PLAN_DEF.monthlyPrice,
+        description: BUSINESS_PLAN_DEF.tagline,
       }),
     ],
   };

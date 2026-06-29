@@ -28,7 +28,7 @@ export function PricingTable() {
   return (
     <div className="flex flex-col items-center gap-8">
       <BillingPeriodToggle period={period} onPeriodChange={setPeriod} />
-      <div className="grid w-full gap-4 md:grid-cols-3">
+      <div className="grid w-full max-w-3xl gap-4 md:grid-cols-2">
         {PLANS.map((plan) => (
           <PlanCard key={plan.plan} plan={plan} period={period} />
         ))}
@@ -80,7 +80,7 @@ function PlanCard({
       </p>
 
       <div className="mt-5">
-        <PlanCta plan={plan} />
+        <PlanCta plan={plan} period={period} />
       </div>
 
       <ul className="mt-6 flex flex-col gap-2 border-t pt-5">
@@ -103,11 +103,22 @@ function PlanCard({
   );
 }
 
-function PlanCta({ plan }: { plan: PlanDefinition }) {
+function PlanCta({
+  plan,
+  period,
+}: {
+  plan: PlanDefinition;
+  period: BillingPeriod;
+}) {
   return (
     <>
       <Unauthenticated>
-        <Button variant={plan.popular ? "default" : "outline"} size="lg" className="w-full" asChild>
+        <Button
+          variant={plan.popular ? "default" : "outline"}
+          size="lg"
+          className="w-full"
+          asChild
+        >
           <Link href={appUrl("/sign-up")}>
             {plan.monthlyPrice === 0
               ? "Start for free"
@@ -116,24 +127,27 @@ function PlanCta({ plan }: { plan: PlanDefinition }) {
         </Button>
       </Unauthenticated>
       <Authenticated>
-        <AuthenticatedPlanCta plan={plan} />
+        <AuthenticatedPlanCta plan={plan} period={period} />
       </Authenticated>
     </>
   );
 }
 
-function AuthenticatedPlanCta({ plan }: { plan: PlanDefinition }) {
+function AuthenticatedPlanCta({
+  plan,
+  period,
+}: {
+  plan: PlanDefinition;
+  period: BillingPeriod;
+}) {
   const org = useQuery(api.organizations.current);
-  const workspaces = useQuery(api.organizations.listMine);
+  const membership = useQuery(api.organizations.myMembership);
   const updatePlan = useMutation(api.organizations.updatePlan);
-
-  const membership = org
-    ? workspaces?.find((entry) => entry.orgId === org._id)
-    : undefined;
+  const createCheckout = useMutation(api.billing.stripe.createBusinessCheckout);
 
   const variant = plan.popular ? "default" : "outline";
 
-  if (org === undefined || workspaces === undefined) {
+  if (org === undefined || membership === undefined) {
     return (
       <Button variant={variant} size="lg" className="w-full" disabled>
         &nbsp;
@@ -157,7 +171,7 @@ function AuthenticatedPlanCta({ plan }: { plan: PlanDefinition }) {
     );
   }
 
-  const isAdmin = membership?.role === "admin";
+  const isAdmin = membership.role === "admin";
   if (!isAdmin) {
     return (
       <Button variant="outline" size="lg" className="w-full" disabled>
@@ -166,27 +180,41 @@ function AuthenticatedPlanCta({ plan }: { plan: PlanDefinition }) {
     );
   }
 
-  return (
-    <Button
-      variant={variant}
-      size="lg"
-      className="w-full"
-      onClick={() => {
+  const startCheckout = () => {
+    const base = window.location.origin;
+  void createCheckout({
+      period,
+      successUrl: `${base}/settings/billing?checkout=success`,
+      cancelUrl: `${base}/pricing`,
+    })
+      .then((result) => {
+        if ("url" in result && typeof result.url === "string") {
+          window.location.href = result.url;
+          return;
+        }
         void updatePlan({ plan: plan.plan })
           .then(() => {
             captureEvent(PostHogEvents.planUpgradeClicked, {
               target_plan: plan.plan,
               previous_plan: org.plan,
             });
-            toast.success(`Switched to ${plan.name}`);
+            toast.success(`Switched to ${plan.name} (demo — ${result.message})`);
           })
           .catch((error: unknown) => {
             toast.error(
               error instanceof Error ? error.message : "Failed to update plan"
             );
           });
-      }}
-    >
+      })
+      .catch((error: unknown) => {
+        toast.error(
+          error instanceof Error ? error.message : "Checkout failed"
+        );
+      });
+  };
+
+  return (
+    <Button variant={variant} size="lg" className="w-full" onClick={startCheckout}>
       {org.plan === "free" && plan.monthlyPrice > 0
         ? `Upgrade to ${plan.name}`
         : plan.monthlyPrice === 0

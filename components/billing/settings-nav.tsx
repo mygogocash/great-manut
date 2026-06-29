@@ -1,12 +1,13 @@
 "use client";
 
-import { CreditCard, Users, Zap } from "lucide-react";
+import { CreditCard, Sparkles, Users, Zap } from "lucide-react";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const SETTINGS_PAGES = [
   { label: "Billing", segment: "billing", icon: CreditCard },
+  { label: "AI", segment: "ai", icon: Sparkles },
   { label: "Members", segment: "members", icon: Users },
   { label: "Automations", segment: "automations", icon: Zap },
 ] as const;

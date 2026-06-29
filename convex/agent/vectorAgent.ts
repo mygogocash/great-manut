@@ -1,8 +1,9 @@
 import { Agent, stepCountIs } from "@convex-dev/agent";
+import type { LanguageModel } from "ai";
 import { components } from "../_generated/api";
 import { Id } from "../_generated/dataModel";
-import { chatModel } from "./models";
 import { vectorTools } from "./tools";
+import { chatModel } from "./models";
 
 /**
  * Custom fields our authenticated entry points inject into the action ctx so
@@ -13,7 +14,7 @@ export type VectorAgentCtx = {
   requestUserId: Id<"users">;
 };
 
-export const VECTOR_INSTRUCTIONS = `You are Manut, the workspace assistant inside the Manut issue tracker (a Linear-style tool: organizations contain teams, teams contain issues like ENG-42, plus projects, cycles, and documentation spaces.
+export const VECTOR_INSTRUCTIONS_TEXT = `You are Manut, the workspace assistant inside the Manut issue tracker (a Linear-style tool: organizations contain teams, teams contain issues like ENG-42, plus projects, cycles, and documentation spaces.
 
 You can use tools to look up teams, members, projects, cycles, issues, and docs; run reports; search (full-text and semantic); create or update issues; and create or link documentation pages.
 
@@ -26,15 +27,21 @@ Guidelines:
 - Keep answers concise and structured with short markdown lists; this is a dense productivity tool, not a chat toy.
 - You only ever see one workspace. If asked about anything outside it, say you can't access that.`;
 
-export const vectorAgent = new Agent<VectorAgentCtx>(components.agent, {
-  name: "Manut",
-  languageModel: chatModel,
-  instructions: VECTOR_INSTRUCTIONS,
-  tools: vectorTools,
-  stopWhen: stepCountIs(12),
-  contextOptions: {
-    // Recent thread history only — issue knowledge comes from tools.
-    recentMessages: 30,
-    searchOtherThreads: false,
-  },
-});
+/** @deprecated Use VECTOR_INSTRUCTIONS_TEXT — kept for existing imports. */
+export const VECTOR_INSTRUCTIONS = VECTOR_INSTRUCTIONS_TEXT;
+
+export function createVectorAgent(languageModel: LanguageModel = chatModel) {
+  return new Agent<VectorAgentCtx>(components.agent, {
+    name: "Manut",
+    languageModel: languageModel as typeof chatModel,
+    instructions: VECTOR_INSTRUCTIONS_TEXT,
+    tools: vectorTools,
+    stopWhen: stepCountIs(12),
+    contextOptions: {
+      recentMessages: 30,
+      searchOtherThreads: false,
+    },
+  });
+}
+
+export const vectorAgent = createVectorAgent();

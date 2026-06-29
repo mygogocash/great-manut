@@ -6,38 +6,54 @@ import {
   updateThreadMetadata,
   vStreamArgs,
 } from "@convex-dev/agent";
-import { calculateRateLimit } from "@convex-dev/rate-limiter";
 import { paginationOptsValidator } from "convex/server";
 import { v } from "convex/values";
 import { components, internal } from "../_generated/api";
-import { Doc, Id } from "../_generated/dataModel";
+import { Id } from "../_generated/dataModel";
 import {
   MutationCtx,
   QueryCtx,
   internalAction,
 } from "../_generated/server";
 import { orgMutation, orgQuery } from "../lib/customFunctions";
-import { hasAiAccess } from "../lib/limits";
 import {
-  PRO_DAILY_MESSAGE_LIMIT,
-  aiMessageKey,
-  aiRateLimiter,
-  threadUserKey,
-} from "./limiter";
+  assertAiCreditBalance,
+  getAiCreditBalance,
+  getAiMode,
+} from "../lib/usageLimits";
+import { creditsForEvent } from "../lib/usagePricing";
+import { aiModeValidator } from "../schema";
+import { threadUserKey } from "./limiter";
 import {
   AI_NOT_CONFIGURED_MESSAGE,
-  assertAiConfigured,
   isAiConfigured,
 } from "./models";
-import { VECTOR_INSTRUCTIONS, vectorAgent } from "./vectorAgent";
+import {
+  createVectorAgent,
+  VECTOR_INSTRUCTIONS_TEXT,
+} from "./vectorAgent";
 
 const DEFAULT_THREAD_TITLE = "New conversation";
 
-function assertAiAccess(org: Doc<"organizations">): void {
-  if (!hasAiAccess(org)) {
-    throw new Error(
-      "The AI agent requires a Pro or Enterprise plan. Upgrade to unlock it."
-    );
+async function assertOrgAiReady(
+  ctx: MutationCtx,
+  orgId: Id<"organizations">
+): Promise<void> {
+  const org = await ctx.db.get(orgId);
+  if (!org) {
+    throw new Error("Workspace not found");
+  }
+  const mode = getAiMode(org);
+  if (mode === "managed") {
+    assertAiCreditBalance(org, "chatMessage");
+    return;
+  }
+  const credential = await ctx.db
+    .query("orgAiCredentials")
+    .withIndex("by_org", (q) => q.eq("orgId", orgId))
+    .unique();
+  if (!credential) {
+    throw new Error("Configure a provider API key in AI settings.");
   }
 }
 
@@ -67,7 +83,7 @@ export const createThread = orgMutation({
   args: {},
   returns: v.string(),
   handler: async (ctx) => {
-    assertAiAccess(ctx.org);
+    await assertOrgAiReady(ctx, ctx.org._id);
     return await createAgentThread(ctx, components.agent, {
       userId: threadUserKey(ctx.org._id, ctx.user._id),
       title: DEFAULT_THREAD_TITLE,
@@ -85,7 +101,9 @@ export const listThreads = orgQuery({
     })
   ),
   handler: async (ctx) => {
-    if (!hasAiAccess(ctx.org)) {
+    const mode = getAiMode(ctx.org);
+    const balance = getAiCreditBalance(ctx.org);
+    if (mode === "managed" && balance <= 0) {
       return [];
     }
     const result = await ctx.runQuery(
@@ -111,7 +129,8 @@ export const deleteThread = orgMutation({
   returns: v.null(),
   handler: async (ctx, args) => {
     await getOwnedThread(ctx, ctx.org._id, ctx.user._id, args.threadId);
-    await vectorAgent.deleteThreadAsync(ctx, { threadId: args.threadId });
+    const agent = createVectorAgent();
+    await agent.deleteThreadAsync(ctx, { threadId: args.threadId });
     return null;
   },
 });
@@ -156,7 +175,7 @@ export const sendMessage = orgMutation({
   args: { threadId: v.string(), prompt: v.string() },
   returns: v.null(),
   handler: async (ctx, args): Promise<null> => {
-    assertAiAccess(ctx.org);
+    await assertOrgAiReady(ctx, ctx.org._id);
     const prompt = args.prompt.trim();
     if (!prompt) {
       throw new Error("Message cannot be empty");
@@ -168,20 +187,11 @@ export const sendMessage = orgMutation({
       args.threadId
     );
 
-    // Pro: 50 messages/user/day. Enterprise: unlimited.
-    if (ctx.org.plan === "pro") {
-      const status = await aiRateLimiter.limit(ctx, "aiMessagesDaily", {
-        key: aiMessageKey(ctx.org._id, ctx.user._id),
+    if (getAiMode(ctx.org) === "managed") {
+      await ctx.runMutation(internal.aiCredits.deductCredits, {
+        orgId: ctx.org._id,
+        amount: creditsForEvent("chatMessage"),
       });
-      if (!status.ok) {
-        const hours = Math.max(
-          1,
-          Math.ceil((status.retryAfter ?? 0) / (60 * 60 * 1000))
-        );
-        throw new Error(
-          `Daily AI limit reached (${PRO_DAILY_MESSAGE_LIMIT} messages/day on Pro). Try again in about ${hours}h, or upgrade to Enterprise for unlimited AI.`
-        );
-      }
     }
 
     const { messageId } = await saveMessage(ctx, components.agent, {
@@ -190,7 +200,6 @@ export const sendMessage = orgMutation({
       prompt,
     });
 
-    // First message names the conversation.
     if (!thread.title || thread.title === DEFAULT_THREAD_TITLE) {
       await updateThreadMetadata(ctx, components.agent, {
         threadId: args.threadId,
@@ -208,11 +217,6 @@ export const sendMessage = orgMutation({
   },
 });
 
-/**
- * Generate the assistant's reply asynchronously, streaming deltas over the
- * websocket. Tools receive the server-resolved org/user via the custom ctx
- * fields — never from model output.
- */
 export const streamResponse = internalAction({
   args: {
     threadId: v.string(),
@@ -227,8 +231,12 @@ export const streamResponse = internalAction({
       userId: args.userId,
     });
     try {
-      assertAiConfigured();
-      await vectorAgent.streamText(
+      const resolved = await ctx.runAction(
+        internal.agent.resolveProvider.resolveOrgAiProvider,
+        { orgId: args.orgId }
+      );
+      const agent = createVectorAgent(resolved.chatModel);
+      await agent.streamText(
         { ...ctx, orgId: args.orgId, requestUserId: args.userId },
         {
           threadId: args.threadId,
@@ -236,13 +244,12 @@ export const streamResponse = internalAction({
         },
         {
           promptMessageId: args.promptMessageId,
-          system: `${VECTOR_INSTRUCTIONS}\n\nWorkspace: ${actor.orgName}. Requesting user: ${actor.userName}. Today's date: ${new Date().toISOString().slice(0, 10)}.`,
+          system: `${VECTOR_INSTRUCTIONS_TEXT}\n\nWorkspace: ${actor.orgName}. Requesting user: ${actor.userName}. Today's date: ${new Date().toISOString().slice(0, 10)}.`,
         },
         { saveStreamDeltas: true }
       );
     } catch (error) {
       console.error("AI response generation failed", error);
-      // Fail gracefully: leave a visible assistant message in the thread.
       const reason = isAiConfigured()
         ? "Something went wrong while generating a response. Please try again."
         : AI_NOT_CONFIGURED_MESSAGE;
@@ -263,45 +270,19 @@ export const quota = orgQuery({
   args: {},
   returns: v.object({
     hasAccess: v.boolean(),
+    aiMode: aiModeValidator,
     unlimited: v.boolean(),
-    limit: v.number(),
-    remaining: v.number(),
-    resetsAt: v.union(v.number(), v.null()),
+    balance: v.number(),
   }),
   handler: async (ctx) => {
-    if (!hasAiAccess(ctx.org)) {
-      return {
-        hasAccess: false,
-        unlimited: false,
-        limit: 0,
-        remaining: 0,
-        resetsAt: null,
-      };
-    }
-    if (ctx.org.plan === "enterprise") {
-      return {
-        hasAccess: true,
-        unlimited: true,
-        limit: PRO_DAILY_MESSAGE_LIMIT,
-        remaining: PRO_DAILY_MESSAGE_LIMIT,
-        resetsAt: null,
-      };
-    }
-    const { value, ts, config } = await aiRateLimiter.getValue(
-      ctx,
-      "aiMessagesDaily",
-      { key: aiMessageKey(ctx.org._id, ctx.user._id) }
-    );
-    const current = calculateRateLimit({ value, ts }, config, Date.now(), 0);
+    const mode = getAiMode(ctx.org);
+    const balance = getAiCreditBalance(ctx.org);
+    const hasAccess = mode === "byok" || balance > 0;
     return {
-      hasAccess: true,
-      unlimited: false,
-      limit: PRO_DAILY_MESSAGE_LIMIT,
-      remaining: Math.max(0, Math.floor(current.value)),
-      resetsAt:
-        current.windowStart !== undefined
-          ? current.windowStart + config.period
-          : null,
+      hasAccess,
+      aiMode: mode,
+      unlimited: mode === "byok",
+      balance,
     };
   },
 });

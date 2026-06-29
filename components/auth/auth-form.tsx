@@ -5,6 +5,7 @@ import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
+import { OAuthButtons } from "@/components/auth/oauth-buttons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -63,6 +64,19 @@ export function AuthForm({
         </p>
       </div>
 
+      <OAuthButtons mode={mode} onError={setError} />
+
+      <div className="relative my-6">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-card px-2 text-muted-foreground">
+            or continue with email
+          </span>
+        </div>
+      </div>
+
       <form onSubmit={(event) => void handleSubmit(event)} className="space-y-4">
         {mode === "signUp" && (
           <div className="space-y-2">
@@ -111,7 +125,7 @@ export function AuthForm({
 
         <Button type="submit" className="w-full" disabled={loading}>
           {loading && <Loader2 className="size-4 animate-spin" />}
-          {mode === "signUp" ? "Create account" : "Sign in"}
+          {mode === "signUp" ? "Create account with email" : "Sign in with email"}
         </Button>
       </form>
 

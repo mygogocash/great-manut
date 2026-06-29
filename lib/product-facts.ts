@@ -1,10 +1,9 @@
 import {
-  ENTERPRISE_PLAN,
+  BUSINESS_PLAN_DEF,
   FREE_PLAN,
-  FREE_PLAN_DISPLAY_LIMITS,
-  PRO_PLAN,
   type PlanDefinition,
 } from "@/lib/plans";
+import { formatStorageGb, storageIncludedBytes } from "@/lib/usage-pricing";
 import { APP_HOST, appUrl, marketingUrl } from "@/lib/site-urls";
 
 /** Core meaning triple for LLMO / GEO alignment. */
@@ -24,7 +23,7 @@ export const FOOTER_TAGLINE =
 
 /** 40–60 word definition for FAQ, llms.txt, speakable schema, and agent footer. */
 export const PRODUCT_DEFINITION =
-  "Manut is a teamwork suite for product teams who want to plan, track, and ship without slowing down. It combines Plan (issues, boards, cycles), Knowledge (docs and discovery), Service (customer portal and queues on Enterprise), and AI (org-scoped agent on Pro) in one keyboard-first workspace.";
+  "Manut is a teamwork suite for product teams who want to plan, track, and ship without slowing down. It combines Plan (issues, boards, cycles), Knowledge (docs and discovery), Service (customer portal and queues), and AI (managed credits or BYOK) in one keyboard-first workspace.";
 
 export const CONTACT_EMAIL = "hello@manut.xyz";
 
@@ -98,21 +97,21 @@ export const FAQ_ITEMS: FaqItem[] = [
   {
     question: "What is Manut?",
     answer:
-      "Manut is a teamwork suite for product teams. It brings Plan (issues, boards, cycles), Knowledge (docs and discovery), Service (service desk on Enterprise), and AI (workspace agent on Pro) into one fast workspace — with keyboard shortcuts and real-time sync on every change.",
+      "Manut is a teamwork suite for product teams. It brings Plan (issues, boards, cycles), Knowledge (docs and discovery), Service (service desk), and AI (managed credits or BYOK) into one fast workspace — with keyboard shortcuts and real-time sync on every change.",
   },
   {
     question: "Is Manut free?",
-    answer: `Yes — Manut has a Free plan for up to ${FREE_PLAN_DISPLAY_LIMITS.seats} teammates, ${FREE_PLAN_DISPLAY_LIMITS.projects} projects, and ${FREE_PLAN_DISPLAY_LIMITS.issues} issues. No credit card required. Pro starts at $${PRO_PLAN.monthlyPrice} per month with AI and unlimited projects. See ${marketingUrl("/pricing")} for full plan details.`,
+    answer: `Yes — Manut has a Free plan with unlimited teammates, ${formatStorageGb(storageIncludedBytes("free"))} storage, and full suite access. AI uses prepaid credit top-ups or your own API key. Business is $${BUSINESS_PLAN_DEF.monthlyPrice}/mo for more storage. See ${marketingUrl("/pricing")}.`,
   },
   {
     question: "How is Manut different from Linear or Jira?",
     answer:
-      "Manut is keyboard-first like Linear but simpler to adopt than Jira. You get issues, kanban boards, and auto-numbered cycles without enterprise bloat. An AI agent on Pro handles filing, standups, and duplicate detection — so teams spend less time managing the tracker and more time shipping.",
+      "Manut is keyboard-first like Linear but simpler to adopt than Jira. You get issues, kanban boards, and auto-numbered cycles without enterprise bloat. The AI agent handles filing, standups, and duplicate detection — with prepaid credits or BYOK so inference cost stays under your control.",
   },
   {
     question: "Does Manut have an AI agent?",
     answer:
-      "Yes — Manut includes an AI agent on Pro and Enterprise. The agent works inside your workspace with org-scoped tools: it creates and updates issues, summarizes cycles, drafts standups, and flags duplicate work using semantic search over your backlog.",
+      "Yes — every workspace can use the AI agent via prepaid credit packs or BYOK (OpenAI, Claude, OpenRouter). The agent works inside your workspace with org-scoped tools: it creates and updates issues, summarizes cycles, drafts standups, and flags duplicate work.",
   },
   {
     question: "What are Manut cycles?",
@@ -121,7 +120,7 @@ export const FAQ_ITEMS: FaqItem[] = [
   },
   {
     question: "How do I get started with Manut?",
-    answer: `Create a free account at ${appUrl("/sign-up")} — no credit card needed. Set up your workspace, invite up to ${FREE_PLAN_DISPLAY_LIMITS.seats - 1} teammates on the Free plan, and start filing issues in under a minute. Upgrade on the Pricing page when you need AI or higher limits.`,
+    answer: `Create a free account at ${appUrl("/sign-up")} — no credit card needed. Set up your workspace, invite unlimited teammates, and start filing issues in under a minute. Top up AI credits or connect BYOK when you need the agent.`,
   },
 ];
 
@@ -140,12 +139,11 @@ export type PlanSummary = {
   name: string;
   monthlyPrice: number;
   annualMonthlyPrice: number;
-  maxSeats: number | null;
   highlights: string[];
 };
 
 export function getPlanSummaries(): PlanSummary[] {
-  return [FREE_PLAN, PRO_PLAN, ENTERPRISE_PLAN].map(summarizePlan);
+  return [FREE_PLAN, BUSINESS_PLAN_DEF].map(summarizePlan);
 }
 
 function summarizePlan(plan: PlanDefinition): PlanSummary {
@@ -153,13 +151,15 @@ function summarizePlan(plan: PlanDefinition): PlanSummary {
     name: plan.name,
     monthlyPrice: plan.monthlyPrice,
     annualMonthlyPrice: plan.annualMonthlyPrice,
-    maxSeats: plan.maxSeats,
     highlights: plan.highlights,
   };
 }
 
 export function getFreePlanLimits() {
-  return { ...FREE_PLAN_DISPLAY_LIMITS };
+  return {
+    storageBytes: storageIncludedBytes("free"),
+    storageLabel: formatStorageGb(storageIncludedBytes("free")),
+  };
 }
 
 /** llmstxt.org index — short cite-ready summary. */
@@ -181,9 +181,8 @@ export function buildLlmsTxt(): string {
     `- App: ${PRODUCT_URLS.app}`,
     "",
     "## Plans (USD, per workspace)",
-    `- Free: $0 — up to ${FREE_PLAN_DISPLAY_LIMITS.seats} members, ${FREE_PLAN_DISPLAY_LIMITS.projects} projects, ${FREE_PLAN_DISPLAY_LIMITS.issues} issues`,
-    `- Pro: $${PRO_PLAN.monthlyPrice}/mo ($${PRO_PLAN.annualMonthlyPrice}/mo annual) — AI agent, unlimited projects/issues, up to 10 members`,
-    `- Enterprise: $${ENTERPRISE_PLAN.monthlyPrice}/mo ($${ENTERPRISE_PLAN.annualMonthlyPrice}/mo annual) — unlimited members and AI`,
+    `- Free: $0 — unlimited members, ${formatStorageGb(storageIncludedBytes("free"))} storage, AI top-up or BYOK`,
+    `- Business: $${BUSINESS_PLAN_DEF.monthlyPrice}/mo ($${BUSINESS_PLAN_DEF.annualMonthlyPrice}/mo annual) — ${formatStorageGb(storageIncludedBytes("business"))} storage + metered overage`,
     "",
     "## Features",
     ...PRODUCT_FEATURES.map((f) => `- ${f.term}: ${f.definition}`),
@@ -230,20 +229,15 @@ export function buildLlmsFullTxt(lastUpdated: string): string {
     "## Plans (USD, billed per workspace)",
     "",
     "### Free — $0",
-    `- Up to ${FREE_PLAN_DISPLAY_LIMITS.seats} members`,
-    `- ${FREE_PLAN_DISPLAY_LIMITS.projects} projects`,
-    `- ${FREE_PLAN_DISPLAY_LIMITS.issues} issues`,
-    "- Unlimited teams and cycles",
-    "- Kanban boards, saved views, realtime collaboration",
+    "- Unlimited members, projects, and issues",
+    `- ${formatStorageGb(storageIncludedBytes("free"))} attachment storage`,
+    "- Full suite: docs, discovery, service desk, automations",
+    "- AI via credit top-up or BYOK",
     "- No credit card required",
     "",
-    `### Pro — $${PRO_PLAN.monthlyPrice}/mo ($${PRO_PLAN.annualMonthlyPrice}/mo billed annually)`,
-    `- ${PRO_PLAN.priceNote ?? ""}`,
-    ...PRO_PLAN.highlights.map((h) => `- ${h}`),
-    "",
-    `### Enterprise — $${ENTERPRISE_PLAN.monthlyPrice}/mo ($${ENTERPRISE_PLAN.annualMonthlyPrice}/mo billed annually)`,
-    `- ${ENTERPRISE_PLAN.priceNote ?? ""}`,
-    ...ENTERPRISE_PLAN.highlights.map((h) => `- ${h}`),
+    `### Business — $${BUSINESS_PLAN_DEF.monthlyPrice}/mo ($${BUSINESS_PLAN_DEF.annualMonthlyPrice}/mo billed annually)`,
+    `- ${BUSINESS_PLAN_DEF.priceNote ?? ""}`,
+    ...BUSINESS_PLAN_DEF.highlights.map((h) => `- ${h}`),
     "",
     "## Features",
     ...PRODUCT_FEATURES.map((f) => `- **${f.term}**: ${f.definition}`),

@@ -72,7 +72,7 @@ function AiWorkspace() {
     quota !== undefined &&
     quota.hasAccess &&
     !quota.unlimited &&
-    quota.remaining <= 0;
+    quota.balance <= 0;
 
   const send = async (prompt: string) => {
     try {
@@ -133,7 +133,7 @@ function AiWorkspace() {
           )}
           <AiComposer
             disabled={quotaExhausted}
-            disabledReason="Daily AI message limit reached — upgrade to Enterprise for unlimited messages"
+            disabledReason="AI credits exhausted — top up or switch to BYOK in settings"
             onSend={send}
           />
         </main>

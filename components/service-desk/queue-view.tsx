@@ -79,8 +79,39 @@ function QueueTable({
   }
 
   return (
-    <ScrollArea className="flex-1">
-      <div className="min-w-[640px] md:min-w-0">
+    <>
+      <ul className="flex flex-col gap-2 p-4 md:hidden">
+        {requests.map((request) => (
+          <li key={request._id}>
+            <Link
+              href={`/${orgSlug}/service/${request._id}`}
+              className="block rounded-lg border bg-card p-3 transition-colors hover:bg-muted/40"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <span className="font-mono text-xs tabular-nums text-muted-foreground">
+                  {request.displayNumber}
+                </span>
+                <Badge
+                  variant="secondary"
+                  className={cn(
+                    "shrink-0 text-[10px] font-normal",
+                    statusBadgeClass(request.status)
+                  )}
+                >
+                  {serviceRequestStatusLabel(request.status)}
+                </Badge>
+              </div>
+              <p className="mt-1.5 line-clamp-2 text-sm font-medium">{request.title}</p>
+              <p className="mt-1 truncate text-xs text-muted-foreground">
+                {request.requestTypeName} ·{" "}
+                {request.requesterName ?? request.requesterEmail}
+              </p>
+            </Link>
+          </li>
+        ))}
+      </ul>
+
+      <ScrollArea className="hidden flex-1 md:flex">
         <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent">
@@ -146,8 +177,8 @@ function QueueTable({
           ))}
         </TableBody>
       </Table>
-      </div>
-    </ScrollArea>
+      </ScrollArea>
+    </>
   );
 }
 

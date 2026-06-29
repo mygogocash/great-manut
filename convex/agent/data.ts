@@ -9,7 +9,10 @@ import {
 } from "../_generated/server";
 import { logActivity } from "../lib/activity";
 import { getAuthContext } from "../lib/auth";
-import { assertCanCreateIssue, hasAiAccess } from "../lib/limits";
+import {
+  getAiCreditBalance,
+  getAiMode,
+} from "../lib/usageLimits";
 import { userDisplayName } from "../lib/userDisplay";
 import { getOrgIssue } from "../issues";
 import {
@@ -134,10 +137,20 @@ export const authorizeAi = internalQuery({
   }),
   handler: async (ctx) => {
     const { user, org } = await getAuthContext(ctx);
-    if (!hasAiAccess(org)) {
+    const mode = getAiMode(org);
+    if (mode === "managed" && getAiCreditBalance(org) <= 0) {
       throw new Error(
-        "The AI agent requires a Pro or Enterprise plan. Upgrade to unlock it."
+        "AI credit balance is empty. Top up credits or switch to BYOK in workspace settings."
       );
+    }
+    if (mode === "byok") {
+      const credential = await ctx.db
+        .query("orgAiCredentials")
+        .withIndex("by_org", (q) => q.eq("orgId", org._id))
+        .unique();
+      if (!credential) {
+        throw new Error("Configure a provider API key in AI settings.");
+      }
     }
     return {
       orgId: org._id,
@@ -358,7 +371,6 @@ export const createIssueForAgent = internalMutation({
       throw new Error("Not a member of this organization");
     }
     const team = await getOrgTeamByKey(ctx, args.orgId, args.teamKey);
-    await assertCanCreateIssue(ctx, org);
 
     const assignee = args.assigneeEmail
       ? await resolveMemberByEmail(ctx, args.orgId, args.assigneeEmail)
@@ -396,7 +408,7 @@ export const createIssueForAgent = internalMutation({
     });
 
     // Fill the semantic-search embedding asynchronously.
-    await ctx.scheduler.runAfter(0, internal.agent.embeddings.embedIssue, {
+    await ctx.scheduler.runAfter(0, internal.agent.embeddingsActions.embedIssue, {
       issueId,
     });
 
@@ -506,7 +518,7 @@ export const updateIssueForAgent = internalMutation({
     }
 
     if (updates.title !== undefined || updates.description !== undefined) {
-      await ctx.scheduler.runAfter(0, internal.agent.embeddings.embedIssue, {
+      await ctx.scheduler.runAfter(0, internal.agent.embeddingsActions.embedIssue, {
         issueId: issue._id,
       });
     }

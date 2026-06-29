@@ -2,6 +2,10 @@ import { v } from "convex/values";
 import { getOrgIssue } from "./issues";
 import { logActivity } from "./lib/activity";
 import { orgMutation, orgQuery } from "./lib/customFunctions";
+import {
+  assertStorageQuota,
+  adjustStorageBytesUsed,
+} from "./lib/usageLimits";
 
 /** Server-side cap; the upload UI also enforces this before uploading. */
 export const MAX_ATTACHMENT_BYTES = 25 * 1024 * 1024;
@@ -15,7 +19,7 @@ const attachmentValidator = v.object({
   fileSize: v.number(),
   uploadedBy: v.id("users"),
   uploaderName: v.string(),
-  /** Short-lived download URL from Convex storage (null if file is gone). */
+  /** Short-lived download URL (null if file is gone). */
   url: v.union(v.string(), v.null()),
 });
 
@@ -32,7 +36,8 @@ export const generateUploadUrl = orgMutation({
 export const create = orgMutation({
   args: {
     issueId: v.id("issues"),
-    storageId: v.id("_storage"),
+    storageId: v.optional(v.id("_storage")),
+    r2Key: v.optional(v.string()),
     fileName: v.string(),
     fileType: v.string(),
     fileSize: v.number(),
@@ -45,16 +50,25 @@ export const create = orgMutation({
       throw new Error("Attachments are limited to 25 MB");
     }
 
+    if (!args.storageId && !args.r2Key) {
+      throw new Error("storageId or r2Key is required");
+    }
+
+    assertStorageQuota(ctx.org, args.fileSize);
+
     const fileName = args.fileName.trim() || "Untitled";
     const attachmentId = await ctx.db.insert("attachments", {
       orgId: ctx.org._id,
       issueId: issue._id,
       storageId: args.storageId,
+      r2Key: args.r2Key,
       fileName,
       fileType: args.fileType,
       fileSize: args.fileSize,
       uploadedBy: ctx.user._id,
     });
+
+    await adjustStorageBytesUsed(ctx, ctx.org._id, args.fileSize);
 
     await logActivity(ctx, {
       orgId: ctx.org._id,
@@ -83,6 +97,13 @@ export const listByIssue = orgQuery({
     const result = [];
     for (const attachment of attachments) {
       const uploader = await ctx.db.get(attachment.uploadedBy);
+      let url: string | null = null;
+      if (attachment.storageId) {
+        url = await ctx.storage.getUrl(attachment.storageId);
+      } else if (attachment.r2Key) {
+        // R2 download URLs are served via Worker proxy when configured.
+        url = null;
+      }
       result.push({
         _id: attachment._id,
         _creationTime: attachment._creationTime,
@@ -92,7 +113,7 @@ export const listByIssue = orgQuery({
         fileSize: attachment.fileSize,
         uploadedBy: attachment.uploadedBy,
         uploaderName: uploader?.name ?? "Unknown user",
-        url: await ctx.storage.getUrl(attachment.storageId),
+        url,
       });
     }
     return result;
@@ -115,8 +136,11 @@ export const remove = orgMutation({
       );
     }
 
-    await ctx.storage.delete(attachment.storageId);
+    if (attachment.storageId) {
+      await ctx.storage.delete(attachment.storageId);
+    }
     await ctx.db.delete(attachment._id);
+    await adjustStorageBytesUsed(ctx, ctx.org._id, -attachment.fileSize);
 
     await logActivity(ctx, {
       orgId: ctx.org._id,

@@ -4,33 +4,25 @@ import { cn } from "@/lib/utils";
 
 export type AiQuota = {
   hasAccess: boolean;
+  aiMode: "managed" | "byok";
   unlimited: boolean;
-  limit: number;
-  remaining: number;
-  resetsAt: number | null;
+  balance: number;
 };
 
-/** Compact daily-quota indicator for Pro orgs (Enterprise is unlimited). */
+/** Credit balance indicator for managed mode; hidden for BYOK. */
 export function QuotaPill({ quota }: { quota: AiQuota | undefined }) {
   if (!quota || !quota.hasAccess || quota.unlimited) {
     return null;
   }
-  const exhausted = quota.remaining <= 0;
-  const resetHint = quota.resetsAt
-    ? `Resets ${new Date(quota.resetsAt).toLocaleTimeString([], {
-        hour: "numeric",
-        minute: "2-digit",
-      })}`
-    : undefined;
+  const exhausted = quota.balance <= 0;
   return (
     <span
-      title={resetHint}
       className={cn(
         "rounded-full border px-2 py-0.5 text-[10px] font-medium text-muted-foreground",
         exhausted && "border-destructive/40 text-destructive"
       )}
     >
-      {quota.remaining}/{quota.limit} messages today
+      {quota.balance.toFixed(1)} credits
     </span>
   );
 }

@@ -1,3 +1,5 @@
+"use node";
+
 import { Output, generateText, jsonSchema } from "ai";
 import { Infer, v } from "convex/values";
 import { internal } from "../_generated/api";
@@ -5,7 +7,7 @@ import { Id } from "../_generated/dataModel";
 import { action } from "../_generated/server";
 import { issuePriorityValidator } from "../schema";
 import { issueSummaryValidator } from "./data";
-import { embedText } from "./embeddings";
+import { embedText } from "./embeddingsActions";
 import {
   AI_NOT_CONFIGURED_MESSAGE,
   chatModel,
