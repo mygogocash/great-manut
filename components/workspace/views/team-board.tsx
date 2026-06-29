@@ -116,7 +116,7 @@ function TeamBoardContent({ teamId }: { teamId: Id<"teams"> }) {
 
   return (
     <>
-      <header className="flex h-12 shrink-0 items-center justify-between gap-2 border-b px-4">
+      <header className="flex h-12 shrink-0 flex-wrap items-center justify-between gap-2 border-b px-4">
         <div className="flex min-w-0 items-center gap-2 text-sm">
           <Link
             href={`/${params.orgSlug}/team/${teamId}`}
@@ -130,7 +130,7 @@ function TeamBoardContent({ teamId }: { teamId: Id<"teams"> }) {
             {display === "board" ? "Board" : "List"}
           </span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center justify-end gap-2">
           <ViewSwitcher
             orgSlug={params.orgSlug}
             teamId={teamId}

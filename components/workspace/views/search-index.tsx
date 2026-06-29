@@ -236,7 +236,7 @@ export function SearchIndexView() {
       </header>
       <div className="flex min-h-0 flex-1 flex-col">
         <div className="mx-auto flex w-full max-w-2xl flex-col gap-3 px-4 pt-6 pb-3">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <InputGroup className="h-9 flex-1">
               <InputGroupAddon>
                 <Search className="size-4" />
@@ -251,7 +251,7 @@ export function SearchIndexView() {
             </InputGroup>
             {showTeamFilter ? (
               <Select value={teamFilter} onValueChange={setTeamFilter}>
-                <SelectTrigger size="sm" className="w-36 gap-1.5">
+                <SelectTrigger size="sm" className="w-full gap-1.5 sm:w-36">
                   <SelectValue placeholder="All teams" />
                 </SelectTrigger>
                 <SelectContent>

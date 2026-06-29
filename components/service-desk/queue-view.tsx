@@ -80,7 +80,8 @@ function QueueTable({
 
   return (
     <ScrollArea className="flex-1">
-      <Table>
+      <div className="min-w-[640px] md:min-w-0">
+        <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent">
             <TableHead className="w-24">Request</TableHead>
@@ -145,6 +146,7 @@ function QueueTable({
           ))}
         </TableBody>
       </Table>
+      </div>
     </ScrollArea>
   );
 }

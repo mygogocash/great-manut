@@ -29,6 +29,13 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { formatDayWithYear } from "@/components/projects/dates";
+import {
+  SecondaryPanelAside,
+  SecondaryPanelSheet,
+  SecondaryPanelTrigger,
+  useSecondaryPanel,
+} from "@/components/shell/secondary-panel";
+import { CONTENT_PX } from "@/lib/responsive";
 import { cn } from "@/lib/utils";
 import {
   SERVICE_REQUEST_STATUSES,
@@ -90,6 +97,7 @@ export function ServiceRequestDetail({
   const [convertOpen, setConvertOpen] = useState(false);
   const [teamId, setTeamId] = useState<Id<"teams"> | "">("");
   const [converting, setConverting] = useState(false);
+  const { open: propertiesOpen, setOpen: setPropertiesOpen } = useSecondaryPanel();
 
   const handleAssign = (value: string) => {
     assign({
@@ -123,6 +131,59 @@ export function ServiceRequestDetail({
     }
   };
 
+  const propertiesPanel = request ? (
+    <div className="flex flex-col gap-3">
+      <PropertyRow label="Status">
+        <Select value={request.status} onValueChange={handleStatus}>
+          <SelectTrigger size="sm" className="w-36 border-none shadow-none">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {SERVICE_REQUEST_STATUSES.map((entry) => (
+              <SelectItem key={entry.value} value={entry.value}>
+                {entry.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </PropertyRow>
+
+      <PropertyRow label="Assignee">
+        <Select
+          value={request.assigneeId ?? UNASSIGNED}
+          onValueChange={handleAssign}
+        >
+          <SelectTrigger size="sm" className="w-36 border-none shadow-none">
+            <SelectValue placeholder="Unassigned" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={UNASSIGNED}>
+              <span className="text-muted-foreground">Unassigned</span>
+            </SelectItem>
+            {members?.map((member) => (
+              <SelectItem key={member.userId} value={member.userId}>
+                <div className="flex items-center gap-1.5">
+                  <UserAvatar name={member.name} imageUrl={member.imageUrl} />
+                  {member.name}
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </PropertyRow>
+
+      <PropertyRow label="Due">
+        <span className="text-xs">
+          {request.dueAt ? formatDayWithYear(request.dueAt) : "—"}
+        </span>
+      </PropertyRow>
+
+      <PropertyRow label="Requester">
+        <span className="truncate text-xs">{request.requesterEmail}</span>
+      </PropertyRow>
+    </div>
+  ) : null;
+
   return (
     <FeatureGate feature="service_desk">
       {request === undefined ? (
@@ -135,9 +196,9 @@ export function ServiceRequestDetail({
         </div>
       ) : (
         <>
-          <header className="flex h-12 shrink-0 items-center justify-between border-b px-4">
-            <div className="flex min-w-0 items-center gap-2 text-sm">
-              <Button variant="ghost" size="icon" className="size-7" asChild>
+          <header className="flex h-12 shrink-0 flex-wrap items-center justify-between gap-2 border-b px-4">
+            <div className="flex min-w-0 flex-1 items-center gap-2 text-sm">
+              <Button variant="ghost" size="icon" className="min-h-11 min-w-11 shrink-0" asChild>
                 <Link href={`/${params.orgSlug}/service`}>
                   <ArrowLeft className="size-4" />
                 </Link>
@@ -147,16 +208,22 @@ export function ServiceRequestDetail({
               </span>
               <span className="truncate font-medium">{request.title}</span>
             </div>
-            {!request.linkedIssueId && (
-              <Button size="sm" variant="outline" onClick={() => setConvertOpen(true)}>
-                Convert to issue
-              </Button>
-            )}
+            <div className="flex items-center gap-2">
+              <SecondaryPanelTrigger
+                label="Properties"
+                onClick={() => setPropertiesOpen(true)}
+              />
+              {!request.linkedIssueId && (
+                <Button size="sm" variant="outline" onClick={() => setConvertOpen(true)}>
+                  Convert to issue
+                </Button>
+              )}
+            </div>
           </header>
 
           <div className="flex min-h-0 flex-1">
             <ScrollArea className="flex-1">
-              <div className="mx-auto flex max-w-3xl flex-col gap-4 px-8 py-8">
+              <div className={cn("mx-auto flex max-w-3xl flex-col gap-4 py-8", CONTENT_PX)}>
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge
                     variant="secondary"
@@ -198,62 +265,18 @@ export function ServiceRequestDetail({
               </div>
             </ScrollArea>
 
-            <aside className="w-72 shrink-0 border-l p-4">
-              <h3 className="mb-3 text-xs font-medium text-muted-foreground">
-                Properties
-              </h3>
-              <div className="flex flex-col gap-3">
-                <PropertyRow label="Status">
-                  <Select value={request.status} onValueChange={handleStatus}>
-                    <SelectTrigger size="sm" className="w-36 border-none shadow-none">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {SERVICE_REQUEST_STATUSES.map((entry) => (
-                        <SelectItem key={entry.value} value={entry.value}>
-                          {entry.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </PropertyRow>
-
-                <PropertyRow label="Assignee">
-                  <Select
-                    value={request.assigneeId ?? UNASSIGNED}
-                    onValueChange={handleAssign}
-                  >
-                    <SelectTrigger size="sm" className="w-36 border-none shadow-none">
-                      <SelectValue placeholder="Unassigned" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value={UNASSIGNED}>
-                        <span className="text-muted-foreground">Unassigned</span>
-                      </SelectItem>
-                      {members?.map((member) => (
-                        <SelectItem key={member.userId} value={member.userId}>
-                          <div className="flex items-center gap-1.5">
-                            <UserAvatar name={member.name} imageUrl={member.imageUrl} />
-                            {member.name}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </PropertyRow>
-
-                <PropertyRow label="Due">
-                  <span className="text-xs">
-                    {request.dueAt ? formatDayWithYear(request.dueAt) : "—"}
-                  </span>
-                </PropertyRow>
-
-                <PropertyRow label="Requester">
-                  <span className="truncate text-xs">{request.requesterEmail}</span>
-                </PropertyRow>
-              </div>
-            </aside>
+            <SecondaryPanelAside title="Properties">
+              {propertiesPanel}
+            </SecondaryPanelAside>
           </div>
+
+          <SecondaryPanelSheet
+            title="Properties"
+            open={propertiesOpen}
+            onOpenChange={setPropertiesOpen}
+          >
+            {propertiesPanel}
+          </SecondaryPanelSheet>
 
           <Dialog open={convertOpen} onOpenChange={setConvertOpen}>
             <DialogContent className="sm:max-w-md">

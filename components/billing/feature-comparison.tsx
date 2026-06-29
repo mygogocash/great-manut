@@ -28,11 +28,11 @@ function ValueCell({ value }: { value: ComparisonValue }) {
 /** Full plan-by-plan feature matrix rendered below the pricing cards. */
 export function FeatureComparison() {
   return (
-    <div className="overflow-hidden rounded-xl border">
+    <div className="overflow-x-auto rounded-xl border">
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent">
-            <TableHead className="w-2/5 px-4 text-xs">
+            <TableHead className="sticky left-0 z-10 w-2/5 bg-background px-4 text-xs">
               Compare plans
             </TableHead>
             {PLANS.map((plan) => (
@@ -75,7 +75,7 @@ function SectionRows({
       </TableRow>
       {section.rows.map((row) => (
         <TableRow key={row.label} className="hover:bg-muted/20">
-          <TableCell className="px-4 py-2.5 text-xs text-muted-foreground">
+          <TableCell className="sticky left-0 z-10 bg-background px-4 py-2.5 text-xs text-muted-foreground">
             {row.label}
           </TableCell>
           {row.values.map((value, index) => (

@@ -29,8 +29,8 @@ export function DiscoveryPage() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <header className="flex h-12 shrink-0 items-center justify-between border-b px-4">
-        <div className="flex items-center gap-3">
+      <header className="flex h-12 shrink-0 flex-wrap items-center justify-between gap-2 border-b px-4">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <span className="text-sm font-medium">Discovery</span>
           {ideas !== undefined ? (
             <span className="text-xs text-muted-foreground">{ideas.length}</span>
