@@ -190,21 +190,22 @@ pnpm install
 
 ### 2. Configure environment
 
-Copy the example and fill in your values:
-
 ```bash
 cp .env.example .env.local
 ```
 
-`NEXT_PUBLIC_CONVEX_URL` and `NEXT_PUBLIC_CONVEX_SITE_URL` come from your Convex deployment. The marketing/app URLs and PostHog keys are documented inline in `.env.example`.
+> ⚠️ The checked-in `.env.example` points at the project's **shared Convex deployment**. For your own setup, replace the Convex values (`CONVEX_DEPLOYMENT`, `NEXT_PUBLIC_CONVEX_URL`, `NEXT_PUBLIC_CONVEX_SITE_URL`) with your own — the next step creates a deployment and fills these in for you. The marketing/app URLs and PostHog keys are documented inline in `.env.example`.
 
 ### 3. Set up Convex
 
 ```bash
-npx convex dev   # first run prompts you to log in and creates a dev deployment
+npx convex login        # first time only
+npx convex dev --once   # creates/links YOUR OWN dev deployment and writes its
+                        # CONVEX_DEPLOYMENT + Convex URL into .env.local
+npx @convex-dev/auth    # one-time: generates the JWT keys Convex Auth needs
 ```
 
-This pushes the schema and backend functions and generates types into `convex/_generated/`. Keep it running during development.
+`convex dev` pushes the schema and backend functions and generates types into `convex/_generated/`; `npx @convex-dev/auth` is a one-time bootstrap that creates the signing keys without which sign-in/sign-up will fail. Confirm that `NEXT_PUBLIC_CONVEX_URL` / `NEXT_PUBLIC_CONVEX_SITE_URL` in `.env.local` now point at **your** deployment, not the committed example values.
 
 Set the secrets the backend needs **on the Convex deployment** (not in `.env.local`):
 
