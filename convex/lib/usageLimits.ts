@@ -6,10 +6,6 @@ import {
   type AiCreditEvent,
 } from "./usagePricing";
 
-export function isBusinessPlan(org: Doc<"organizations">): boolean {
-  return org.plan === "business";
-}
-
 export function getStorageBytesUsed(org: Doc<"organizations">): number {
   return org.storageBytesUsed ?? 0;
 }

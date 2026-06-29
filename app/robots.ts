@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { marketingUrl } from "@/lib/site-urls";
+import { marketingUrl, MARKETING_HOSTS } from "@/lib/site-urls";
 
 const AI_CRAWLER_PATHS = ["/", "/pricing", "/llms.txt", "/llms-full.txt"];
 
@@ -26,6 +26,6 @@ export default function robots(): MetadataRoute.Robots {
       })),
     ],
     sitemap: marketingUrl("/sitemap.xml"),
-    host: marketingUrl("/"),
+    host: MARKETING_HOSTS[0],
   };
 }

@@ -198,7 +198,10 @@ export const update = orgMutation({
         newValue: args.priority,
       });
     }
-    if (args.assigneeId !== undefined) {
+    if (
+      args.assigneeId !== undefined &&
+      (args.assigneeId ?? undefined) !== issue.assigneeId
+    ) {
       updates.assigneeId = args.assigneeId ?? undefined;
       changes.push({
         field: "assignee",

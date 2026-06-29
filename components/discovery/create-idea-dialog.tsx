@@ -54,7 +54,7 @@ export function CreateIdeaDialog({
     setSubmitting(true);
     try {
       await createIdea({
-        title,
+        title: title.trim(),
         description: description.trim() || undefined,
         status,
         impact,
@@ -184,7 +184,7 @@ export function CreateIdeaInline({
     }
     setSubmitting(true);
     try {
-      await createIdea({ title, status: defaultStatus });
+      await createIdea({ title: title.trim(), status: defaultStatus });
       toast.success("Idea created");
       onClose();
     } catch (error) {

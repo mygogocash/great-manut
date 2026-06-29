@@ -84,6 +84,10 @@ export const backfillOrgEmbeddings = internalAction({
       values: batch.map((item) => item.text.slice(0, 8000)),
     });
 
+    if (embeddings.length !== batch.length) {
+      throw new Error("embedMany returned a mismatched embedding count");
+    }
+
     if (resolved.deductCredits) {
       await ctx.runMutation(internal.aiCredits.deductCredits, {
         orgId: args.orgId,
