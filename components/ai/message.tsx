@@ -61,7 +61,10 @@ function AssistantText({
 }) {
   const [visibleText] = useSmoothText(text, { startStreaming: streaming });
   return (
-    <Streamdown className="text-sm leading-relaxed [&_a]:underline [&_code]:text-xs">
+    <Streamdown
+      shikiTheme={["github-light", "github-dark"]}
+      className="text-sm leading-relaxed [&_a]:underline [&_code]:text-xs"
+    >
       {visibleText}
     </Streamdown>
   );
