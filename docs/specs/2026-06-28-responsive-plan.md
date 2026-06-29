@@ -42,7 +42,7 @@ Unified responsive strategy for Manut (Next.js 16 + Tailwind 4 + shadcn/ui).
 ### Public pages
 
 - `/pricing`: `px-4 sm:px-6` on mobile
-- `/sign-in`, `/sign-up`, `/portal/*`: responsive padding on form containers (future)
+- `/sign-in`, `/sign-up`, `/onboarding`, `/portal/*`: `CONTENT_PX` on page containers
 
 ---
 
@@ -68,7 +68,7 @@ Each workspace view inherits shell behavior. Toolbars use `flex-wrap` and stack 
 | Projects / cycles | Card/list responsive grids (existing) |
 | Docs (`space-layout`) | Page tree in Sheet &lt;lg; breadcrumb `overflow-x-auto` |
 | Discovery | Header wraps; board/matrix scroll |
-| Service queue | Card layout &lt;md OR `overflow-x-auto` table wrapper |
+| Service queue | Card layout &lt;md; table md+ | Card layout &lt;md; table md+ |
 | Service detail | Properties Sheet &lt;lg |
 | Search | Input + team filter stack/wrap |
 | AI | Chat full-width (existing) |
@@ -127,11 +127,11 @@ Prop: `onNavigate?: () => void` — closes Sheet after nav on mobile.
 
 | Phase | Scope | Status |
 |-------|-------|--------|
-| **0** | `CONTENT_PX`, AGENTS.md bullets | Foundation |
-| **M** | Marketing nav Sheet, hero, footer, pricing, feature comparison | Marketing |
-| **A** | Shell, sidebar variants, mobile header | **Critical path** |
-| **B** | Issue detail, service, docs, settings, toolbars, queue | App surfaces |
-| **Q** | Manual QA checklist (Part E), visual regression, device matrix | QA |
+| **0** | `CONTENT_PX`, AGENTS.md bullets | ✅ Done |
+| **M** | Marketing nav Sheet, hero, footer, pricing, feature comparison | ✅ Done |
+| **A** | Shell, sidebar variants, mobile header | ✅ Done |
+| **B** | Issue detail, service, docs, settings, toolbars, queue | ✅ Done (queue cards added in Phase Q) |
+| **Q** | Manual QA checklist (Part E), device matrix | 🔄 In progress — production smoke at 375px verified for marketing nav |
 
 Dependencies: **0 → M → A → B → Q**. Phase A unblocks all authenticated work.
 
@@ -141,10 +141,10 @@ Dependencies: **0 → M → A → B → Q**. Phase A unblocks all authenticated 
 
 ### Marketing
 
-- [ ] Hamburger opens Sheet on &lt;768px; links work
-- [ ] Hero pill doesn’t overflow; CTAs tappable (44px)
+- [x] Hamburger opens Sheet on &lt;768px; links work (verified production `manut.xyz` @375px)
+- [x] Hero pill doesn’t overflow; CTAs tappable (44px)
 - [ ] Pricing table scrolls horizontally on phone
-- [ ] Footer mono blocks wrap (`break-all`)
+- [x] Footer mono blocks wrap (`break-all`)
 
 ### App shell
 
@@ -172,7 +172,7 @@ Dependencies: **0 → M → A → B → Q**. Phase A unblocks all authenticated 
 ### Toolbars
 
 - [ ] Team board, discovery, search toolbars wrap without horizontal page scroll
-- [ ] Service queue usable on phone (cards or scroll)
+- [ ] Service queue usable on phone (cards or scroll) — cards implemented; needs device QA
 
 ### Cross-browser
 

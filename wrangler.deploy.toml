@@ -28,6 +28,11 @@ service = "great-manut"
 [images]
 binding = "IMAGES"
 
+[[r2_buckets]]
+binding = "MANUT_ATTACHMENTS"
+bucket_name = "manut-attachments"
+preview_bucket_name = "manut-attachments-preview"
+
 [vars]
 NEXT_PUBLIC_CONVEX_URL = "https://sincere-oriole-287.convex.cloud"
 NEXT_PUBLIC_CONVEX_SITE_URL = "https://sincere-oriole-287.convex.site"

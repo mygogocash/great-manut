@@ -1,21 +1,22 @@
 /**
  * Plan definitions and display helpers for Manut billing UI.
  *
- * `convex/lib/limits.ts` is the authoritative enforcement of free-tier caps;
- * the numbers here mirror it for display purposes.
+ * Enforcement: `convex/lib/usageLimits.ts` (storage + AI credits).
+ * Pricing constants: `lib/usage-pricing.ts`.
  */
 
+import {
+  AI_CREDIT_PACKS,
+  BUSINESS_PLAN as BUSINESS_PRICING,
+  STORAGE_INCLUDED_BYTES,
+  STORAGE_OVERAGE_USD_PER_GB_MONTH,
+  formatStorageGb,
+} from "@/lib/usage-pricing";
+
 /** Convex `organizations.plan` values. */
-export type OrgPlan = "free" | "pro" | "enterprise";
+export type OrgPlan = "free" | "business";
 
 export type BillingPeriod = "month" | "annual";
-
-/** Display mirror of `FREE_PLAN_LIMITS` in convex/lib/limits.ts. */
-export const FREE_PLAN_DISPLAY_LIMITS = {
-  seats: 3,
-  projects: 2,
-  issues: 100,
-} as const;
 
 export type PlanDefinition = {
   plan: OrgPlan;
@@ -24,73 +25,52 @@ export type PlanDefinition = {
   monthlyPrice: number;
   annualMonthlyPrice: number;
   priceNote?: string;
-  maxSeats: number | null;
   highlights: string[];
   highlightsLeadIn?: string;
   popular?: boolean;
 };
 
+const freeStorage = formatStorageGb(STORAGE_INCLUDED_BYTES.free);
+const businessStorage = formatStorageGb(STORAGE_INCLUDED_BYTES.business);
+
 export const FREE_PLAN: PlanDefinition = {
   plan: "free",
   name: "Free",
-  tagline: "For small teams getting started with Plan — issues, boards, and cycles.",
+  tagline:
+    "Unlimited teammates. Full suite. AI via credit top-up or your own API key.",
   monthlyPrice: 0,
   annualMonthlyPrice: 0,
-  maxSeats: FREE_PLAN_DISPLAY_LIMITS.seats,
   highlights: [
-    `Up to ${FREE_PLAN_DISPLAY_LIMITS.seats} members`,
-    `${FREE_PLAN_DISPLAY_LIMITS.projects} projects`,
-    `${FREE_PLAN_DISPLAY_LIMITS.issues} issues`,
-    "Plan: issues, boards, cycles, and search",
-    "Knowledge: read shared doc spaces",
-    "Realtime collaboration",
+    "Unlimited members, projects, and issues",
+    `${freeStorage} attachment storage`,
+    "Docs, Discovery, Service desk, Automations",
+    "AI: top-up packs or BYOK (OpenAI, Claude, OpenRouter)",
+    "50 starter AI credits once",
   ],
 };
 
-export const PRO_PLAN: PlanDefinition = {
-  plan: "pro",
-  name: "Pro",
-  tagline: "For growing teams — Knowledge, Discovery, and AI alongside Plan.",
-  monthlyPrice: 20,
-  annualMonthlyPrice: 16,
-  priceNote: "+$10 per seat after the first · up to 10 members",
-  maxSeats: 10,
+export const BUSINESS_PLAN_DEF: PlanDefinition = {
+  plan: "business",
+  name: "Business",
+  tagline: `$${BUSINESS_PRICING.monthlyPriceUsd}/mo for more storage — same AI model as Free.`,
+  monthlyPrice: BUSINESS_PRICING.monthlyPriceUsd,
+  annualMonthlyPrice: BUSINESS_PRICING.annualMonthlyEquivalentUsd,
+  priceNote: `$${BUSINESS_PRICING.annualPriceUsd}/year · 2 months free`,
   highlightsLeadIn: "Everything in Free, plus:",
   highlights: [
-    "Up to 10 members (seat-based)",
-    "Unlimited projects and issues",
-    "Knowledge: create doc spaces and wikis",
-    "Discovery: ideas board and promote-to-issue",
-    "AI agent with workspace context",
-    "50 AI messages per user per day",
+    `${businessStorage} storage included`,
+    `$${STORAGE_OVERAGE_USD_PER_GB_MONTH}/GB/mo overage`,
+    "Stripe metered storage billing",
+    "Same AI: top-up or BYOK (not bundled)",
   ],
   popular: true,
 };
 
-export const ENTERPRISE_PLAN: PlanDefinition = {
-  plan: "enterprise",
-  name: "Enterprise",
-  tagline: "Full suite — Service desk and Automations at unlimited scale.",
-  monthlyPrice: 99,
-  annualMonthlyPrice: 79,
-  priceNote: "Flat rate · unlimited members",
-  maxSeats: null,
-  highlightsLeadIn: "Everything in Pro, plus:",
-  highlights: [
-    "Unlimited members",
-    "Service: customer portal and agent queues",
-    "Automations for issues and requests",
-    "Unlimited AI usage",
-    "Priority support",
-  ],
-};
-
-export const PLANS: PlanDefinition[] = [FREE_PLAN, PRO_PLAN, ENTERPRISE_PLAN];
+export const PLANS: PlanDefinition[] = [FREE_PLAN, BUSINESS_PLAN_DEF];
 
 const PLANS_BY_ORG_PLAN: Record<OrgPlan, PlanDefinition> = {
   free: FREE_PLAN,
-  pro: PRO_PLAN,
-  enterprise: ENTERPRISE_PLAN,
+  business: BUSINESS_PLAN_DEF,
 };
 
 export function planForOrg(plan: OrgPlan): PlanDefinition {
@@ -112,7 +92,7 @@ export type ComparisonValue = string | boolean;
 
 export type ComparisonRow = {
   label: string;
-  values: [ComparisonValue, ComparisonValue, ComparisonValue];
+  values: [ComparisonValue, ComparisonValue];
 };
 
 export type ComparisonSection = {
@@ -122,77 +102,34 @@ export type ComparisonSection = {
 
 export const COMPARISON_SECTIONS: ComparisonSection[] = [
   {
-    title: "Plan",
+    title: "Workspace",
     rows: [
+      { label: "Members", values: ["Unlimited", "Unlimited"] },
+      { label: "Projects & issues", values: ["Unlimited", "Unlimited"] },
+      { label: "Storage included", values: [freeStorage, businessStorage] },
       {
-        label: "Members",
-        values: [
-          `Up to ${FREE_PLAN_DISPLAY_LIMITS.seats}`,
-          "Up to 10",
-          "Unlimited",
-        ],
+        label: "Storage overage",
+        values: [false, `$${STORAGE_OVERAGE_USD_PER_GB_MONTH}/GB/mo`],
       },
-      {
-        label: "Projects",
-        values: [
-          `${FREE_PLAN_DISPLAY_LIMITS.projects}`,
-          "Unlimited",
-          "Unlimited",
-        ],
-      },
-      {
-        label: "Issues",
-        values: [
-          `${FREE_PLAN_DISPLAY_LIMITS.issues}`,
-          "Unlimited",
-          "Unlimited",
-        ],
-      },
-      { label: "Teams and cycles", values: ["Unlimited", "Unlimited", "Unlimited"] },
-      { label: "Kanban boards and list views", values: [true, true, true] },
-      { label: "Saved views and full-text search", values: [true, true, true] },
-      { label: "Comments, mentions and activity", values: [true, true, true] },
-    ],
-  },
-  {
-    title: "Knowledge",
-    rows: [
-      { label: "Docs — read spaces", values: [true, true, true] },
-      { label: "Docs — create spaces", values: [false, true, true] },
-      { label: "Product Discovery", values: [false, true, true] },
-    ],
-  },
-  {
-    title: "Service",
-    rows: [
-      { label: "Service desk portal", values: [false, false, true] },
-      { label: "Agent queues and SLAs", values: [false, false, true] },
+      { label: "All suite modules", values: [true, true] },
     ],
   },
   {
     title: "AI",
     rows: [
-      { label: "AI agent", values: [false, true, true] },
+      { label: "Managed credit top-up", values: [true, true] },
       {
-        label: "AI messages",
-        values: [false, "50 / user / day", "Unlimited"],
+        label: "Credit packs",
+        values: [
+          `$${AI_CREDIT_PACKS[0].priceUsd}–$${AI_CREDIT_PACKS[2].priceUsd}`,
+          `$${AI_CREDIT_PACKS[0].priceUsd}–$${AI_CREDIT_PACKS[2].priceUsd}`,
+        ],
       },
-      { label: "Triage assist", values: [false, true, true] },
-      { label: "Duplicate detection", values: [false, true, true] },
-      { label: "Standup and cycle reports", values: [false, true, true] },
-    ],
-  },
-  {
-    title: "Automations",
-    rows: [
-      { label: "Issue and request automations", values: [false, false, true] },
-    ],
-  },
-  {
-    title: "Support",
-    rows: [
-      { label: "Community support", values: [true, true, true] },
-      { label: "Priority support", values: [false, false, true] },
+      { label: "BYOK (OpenAI, Claude, OpenRouter)", values: [true, true] },
+      { label: "AI bundled in subscription", values: [false, false] },
     ],
   },
 ];
+
+/** @deprecated Legacy export — use BUSINESS_PLAN_DEF */
+export const BUSINESS_PLAN = BUSINESS_PLAN_DEF;

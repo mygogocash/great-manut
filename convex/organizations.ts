@@ -7,10 +7,10 @@ import {
   orgQuery,
 } from "./lib/customFunctions";
 import { getCurrentUserOrNull } from "./lib/auth";
-import { assertUnderSeatLimit } from "./lib/limits";
+import { AI_STARTER_CREDITS } from "./lib/usagePricing";
 import { uniqueOrgSlug } from "./lib/slug";
 import { userDisplayName, userImageUrl } from "./lib/userDisplay";
-import { memberRoleValidator, planValidator } from "./schema";
+import { memberRoleValidator, planValidator, aiModeValidator } from "./schema";
 
 const orgShape = {
   _id: v.id("organizations"),
@@ -20,6 +20,11 @@ const orgShape = {
   imageUrl: v.optional(v.string()),
   plan: planValidator,
   subscriptionStatus: v.optional(v.string()),
+  storageBytesUsed: v.optional(v.number()),
+  aiMode: v.optional(aiModeValidator),
+  aiCreditBalance: v.optional(v.number()),
+  stripeCustomerId: v.optional(v.string()),
+  stripeSubscriptionId: v.optional(v.string()),
 };
 
 const membershipSummary = v.object({
@@ -117,6 +122,9 @@ export const create = authedMutation({
       name,
       slug,
       plan: "free",
+      storageBytesUsed: 0,
+      aiMode: "managed",
+      aiCreditBalance: AI_STARTER_CREDITS,
     });
     await ctx.db.insert("members", {
       orgId,
@@ -287,8 +295,6 @@ export const inviteMember = orgAdminMutation({
     if (!email) {
       throw new Error("Email is required");
     }
-
-    await assertUnderSeatLimit(ctx, ctx.org);
 
     const existingMembers = await ctx.db
       .query("members")

@@ -15,8 +15,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  ENTERPRISE_PLAN,
-  PRO_PLAN,
+  BUSINESS_PLAN_DEF,
   type PlanDefinition,
 } from "@/lib/plans";
 import {
@@ -31,18 +30,23 @@ function copyForKind(kind: UpgradePromptKind): {
   description: string;
   targetPlan: PlanDefinition;
 } {
+  if (kind === "storage" || kind === "ai_credits") {
+    return {
+      ...PLAN_LIMIT_COPY[kind],
+      targetPlan: BUSINESS_PLAN_DEF,
+    };
+  }
   if (kind === "issues" || kind === "projects" || kind === "seats") {
     return {
       ...PLAN_LIMIT_COPY[kind],
-      targetPlan: PRO_PLAN,
+      targetPlan: BUSINESS_PLAN_DEF,
     };
   }
   const feature = FEATURE_GATE_COPY[kind];
   return {
     title: feature.title,
     description: feature.description,
-    targetPlan:
-      feature.targetPlan === "enterprise" ? ENTERPRISE_PLAN : PRO_PLAN,
+    targetPlan: BUSINESS_PLAN_DEF,
   };
 }
 

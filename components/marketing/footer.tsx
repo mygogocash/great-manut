@@ -107,8 +107,7 @@ export function Footer() {
           <ul className="mt-4 space-y-1 break-all text-xs font-mono text-muted-foreground">
             {facts.plans.map((plan) => (
               <li key={plan.name}>
-                {plan.name}: ${plan.monthlyPrice}/mo
-                {plan.maxSeats !== null ? ` · up to ${plan.maxSeats} members` : " · unlimited members"}
+                {plan.name}: ${plan.monthlyPrice}/mo · unlimited members
               </li>
             ))}
           </ul>

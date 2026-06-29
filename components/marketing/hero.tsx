@@ -37,7 +37,7 @@ export function Hero() {
 
         <h1
           id="hero-headline"
-          className="mt-8 max-w-3xl text-5xl font-semibold tracking-tighter text-balance md:text-7xl"
+          className="mt-8 max-w-3xl text-4xl font-semibold tracking-tighter text-balance sm:text-5xl md:text-7xl"
         >
           Ship faster with a suite that keeps up
         </h1>

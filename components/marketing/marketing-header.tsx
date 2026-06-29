@@ -53,8 +53,8 @@ export function MarketingHeader() {
               >
                 <Link href="/pricing">Pricing</Link>
               </Button>
-              <div className="mt-2 flex flex-col gap-2 border-t pt-4">
-                <MarketingNavAuth />
+              <div className="mt-2 border-t pt-4">
+                <MarketingNavAuth layout="stacked" />
               </div>
             </nav>
           </SheetContent>

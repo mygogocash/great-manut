@@ -19,17 +19,19 @@ This repo is built **foundation-first, then in parallel tracks**. Each track is 
 
 ## Architecture you must follow
 
-- **Auth:** Convex Auth (`@convex-dev/auth`) with email/password. Users, orgs, and memberships live in Convex (`users`, `organizations`, `members`, `invitations`). Org context comes from the active org on the session/JWT. Never bypass `orgQuery` / `orgMutation` scoping.
+- **Auth:** Convex Auth (`@convex-dev/auth`) with GitHub, Google, and email/password. Users, orgs, and memberships live in Convex (`users`, `organizations`, `members`, `invitations`). Org context comes from the active org on the session/JWT. Never bypass `orgQuery` / `orgMutation` scoping.
 - **Every Convex function** uses the wrappers from `convex/lib/customFunctions.ts`:
   - `orgQuery` / `orgMutation` — resolves `ctx.user`, `ctx.org`, `ctx.membership` from the active org and verifies membership. **Always scope queries by `ctx.org._id`** and verify any document you load belongs to `ctx.org._id`.
   - `orgAdminMutation` — same, plus requires the org admin role.
   - `authedQuery` / `authedMutation` — signed-in but org-agnostic (rare).
   - Public `query`/`mutation` without auth is forbidden except documented public endpoints (e.g. service desk portal submit).
 - **Validators required** on args AND returns of every public function. Import shared validators from `convex/schema.ts`.
-- **Billing gates** (demo billing — no Stripe/Clerk):
-  - Plans: `free` / `pro` / `enterprise` on `ctx.org.plan`. Org admins switch plans via `organizations.updatePlan`.
-  - In Convex: helpers in `convex/lib/limits.ts` — `assertCanCreateIssue`, `assertCanCreateProject`, `hasAiAccess`, `assertHasDocsWrite`, `assertHasDiscovery`, `assertHasServiceDesk`, `assertHasAutomations`, `FREE_PLAN_LIMITS`.
-  - In UI: `useSuiteFeatureAccess` / `<FeatureGate feature="…">` from `components/billing/`. UI checks are cosmetic; Convex `assert*` helpers are the enforcement.
+- **Billing gates** (usage-based — Free + Business):
+  - Plans: `free` / `business` on `ctx.org.plan`. Business via Stripe Checkout or demo `organizations.updatePlan`.
+  - **Storage:** quotas in `convex/lib/usageLimits.ts` + `lib/usage-pricing.ts` (Free 2GB hard cap; Business 10GB + metered overage).
+  - **AI:** prepaid `aiCreditBalance` (managed) or BYOK via `orgAiCredentials` — not bundled in subscription. Enforcement in `convex/agent/chat.ts`, `convex/lib/usageLimits.ts`.
+  - All suite modules enabled on both plans (no seat/project/issue gates in `convex/lib/limits.ts`).
+  - UI: `useSuiteFeatureAccess` / `<FeatureGate>` are cosmetic; Convex `assert*` on storage and AI credits are enforcement.
 - **Activity logging**: any mutation that changes an issue should call `logActivity` from `convex/lib/activity.ts`.
 - **UI conventions**: shadcn/ui components from `components/ui/`, lucide icons, Linear-style density (small text, h-7/h-9 rows), dark theme default with light mode via `next-themes`. Shared primitives in `components/shared/`.
 - **Routes:** Workspace sections use client-side routing at `app/(app)/[orgSlug]/[[...section]]/page.tsx` via `lib/workspace-routes.ts` and `components/workspace/workspace-route-view.tsx`. Public customer portal: `app/portal/[orgSlug]/page.tsx` (`/portal/*` is public in `middleware.ts`). Issue detail remains a dedicated route under `team/[teamId]/issue/[issueId]`.
@@ -132,7 +134,7 @@ Do not start dev servers or push to the Convex deployment from a worktree. From 
 - Production frontend deploys on push to **`main`** via **Cloudflare Workers Builds** (dashboard: production branch `main`, build `pnpm run build`, deploy `npx wrangler deploy`, non-production builds disabled). Live at https://app.manut.xyz and https://manut.xyz on Worker `great-manut`. GitHub default branch is `preview` — promote via merge `preview` → `main`. GHA `Deploy Cloudflare` also runs on `main`; disable one path to avoid double-deploy.
 - Frontend deploys via OpenNext (`@opennextjs/cloudflare`) on Cloudflare Workers. `pnpm run build` runs OpenNext (which invokes `next build` internally — do not point OpenNext `buildCommand` back at `pnpm run build`). Use `npx wrangler deploy -c wrangler.deploy.toml` if the plain deploy command fails (DO migration config).
 - `NEXT_PUBLIC_CONVEX_URL` and `NEXT_PUBLIC_CONVEX_SITE_URL` must be in `wrangler.toml` `[vars]` and inlined at build time — missing runtime vars cause HTTP 500 on the Worker.
-- Auth uses Convex Auth (`@convex-dev/auth`) with email/password; Clerk was removed — ignore stale Clerk references elsewhere in this file.
+- Auth uses Convex Auth (`@convex-dev/auth`) with GitHub, Google, and email/password; OAuth callbacks: `https://sincere-oriole-287.convex.site/api/auth/callback/{github|google}`. Clerk was removed — ignore stale Clerk references elsewhere in this file.
 - Edge auth middleware lives in `middleware.ts` (not Next 16 `proxy.ts`) for OpenNext on Cloudflare; `/ingest` and `/portal/*` must stay public routes.
 - ESLint must ignore `.open-next/**` (OpenNext build artifacts break lint otherwise).
 - Convex dev deployment: `sincere-oriole-287` (project `great-manut`, team `kunanon-jarat`). Run `npx convex dev` from main checkout after schema changes; CI uses `CONVEX_DEPLOY_KEY` in GitHub secrets.

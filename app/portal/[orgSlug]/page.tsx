@@ -20,6 +20,7 @@ import {
   serviceRequestStatusLabel,
   type ServiceRequestStatus,
 } from "@/components/service-desk/service-desk-meta";
+import { CONTENT_PX } from "@/lib/responsive";
 
 function getRateLimitKey(): string {
   if (typeof window === "undefined") {
@@ -276,7 +277,7 @@ export default function PortalPage() {
 
   if (org === null) {
     return (
-      <div className="flex min-h-dvh flex-col items-center justify-center gap-2 px-6 text-center">
+      <div className={`flex min-h-dvh flex-col items-center justify-center gap-2 text-center ${CONTENT_PX}`}>
         <BrandMark href="/" />
         <p className="mt-6 text-sm text-muted-foreground">Workspace not found.</p>
       </div>
@@ -285,10 +286,10 @@ export default function PortalPage() {
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <header className="border-b px-6 py-4">
+      <header className={`border-b py-4 ${CONTENT_PX}`}>
         <BrandMark href="/" />
       </header>
-      <main className="mx-auto flex w-full max-w-lg flex-1 flex-col px-6 py-10">
+      <main className={`mx-auto flex w-full max-w-lg flex-1 flex-col py-10 ${CONTENT_PX}`}>
         <div className="mb-8 text-center">
           <h1 className="text-xl font-semibold">{org.name}</h1>
           <p className="mt-1 text-sm text-muted-foreground">

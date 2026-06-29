@@ -5,7 +5,7 @@ import { Doc, Id } from "./_generated/dataModel";
 import { mutation, query, MutationCtx, QueryCtx } from "./_generated/server";
 import { runAutomations } from "./lib/automationEngine";
 import { orgMutation, orgQuery } from "./lib/customFunctions";
-import { assertHasServiceDesk, hasServiceDesk } from "./lib/limits";
+import { hasServiceDesk } from "./lib/limits";
 import { userDisplayName, userImageUrl } from "./lib/userDisplay";
 import { serviceRequestStatusValidator } from "./schema";
 
@@ -158,8 +158,6 @@ export const ensureDefaults = orgMutation({
   args: {},
   returns: v.null(),
   handler: async (ctx) => {
-    assertHasServiceDesk(ctx.org);
-
     const existing = await ctx.db
       .query("requestTypes")
       .withIndex("by_org", (q) => q.eq("orgId", ctx.org._id))
@@ -188,8 +186,6 @@ export const listQueue = orgQuery({
   },
   returns: v.array(v.object(queueRequestShape)),
   handler: async (ctx, args) => {
-    assertHasServiceDesk(ctx.org);
-
     const all = await ctx.db
       .query("serviceRequests")
       .withIndex("by_org", (q) => q.eq("orgId", ctx.org._id))
@@ -228,8 +224,6 @@ export const get = orgQuery({
   args: { requestId: v.id("serviceRequests") },
   returns: v.union(v.object(requestDetailShape), v.null()),
   handler: async (ctx, args) => {
-    assertHasServiceDesk(ctx.org);
-
     const request = await ctx.db.get(args.requestId);
     if (!request || request.orgId !== ctx.org._id) {
       return null;
@@ -245,8 +239,6 @@ export const assign = orgMutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    assertHasServiceDesk(ctx.org);
-
     const request = await getOrgRequest(ctx, ctx.org._id, args.requestId);
     const previous = request.assigneeId;
 
@@ -285,8 +277,6 @@ export const updateStatus = orgMutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    assertHasServiceDesk(ctx.org);
-
     const request = await getOrgRequest(ctx, ctx.org._id, args.requestId);
     if (request.status === args.status) {
       return null;
@@ -321,8 +311,6 @@ export const convertToIssue = orgMutation({
     issueKey: v.string(),
   }),
   handler: async (ctx, args) => {
-    assertHasServiceDesk(ctx.org);
-
     const request = await getOrgRequest(ctx, ctx.org._id, args.requestId);
     if (request.linkedIssueId) {
       throw new Error("Request is already linked to an issue");

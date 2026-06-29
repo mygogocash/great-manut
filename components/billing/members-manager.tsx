@@ -2,8 +2,6 @@
 
 import { useMutation, useQuery } from "convex/react";
 import { Loader2, Mail, Trash2, UserPlus } from "lucide-react";
-import Link from "next/link";
-import { useParams } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { toast } from "sonner";
 import { api } from "@/convex/_generated/api";
@@ -87,8 +85,6 @@ export function MembersManager() {
   const isAdmin = membership.role === "admin";
   const memberCount = members.length;
   const pendingCount = invitations.length;
-  const seatsUsed = memberCount + pendingCount;
-  const atSeatLimit = plan.maxSeats !== null && seatsUsed >= plan.maxSeats;
 
   return (
     <>
@@ -97,19 +93,11 @@ export function MembersManager() {
         <p className="text-xs text-muted-foreground">
           {memberCount} {memberCount === 1 ? "member" : "members"}
           {pendingCount > 0 && ` · ${pendingCount} pending`}
-          {plan.maxSeats !== null
-            ? ` · ${seatsUsed} of ${plan.maxSeats} seats used on ${plan.name}`
-            : ` · unlimited seats on ${plan.name}`}
+          {` · unlimited seats on ${plan.name}`}
         </p>
       </div>
 
-      {isAdmin && (
-        <InviteMemberForm
-          atSeatLimit={atSeatLimit}
-          planName={plan.name}
-          isFreePlan={org.plan === "free"}
-        />
-      )}
+      {isAdmin && <InviteMemberForm />}
 
       <section className="flex flex-col gap-3">
         <h2 className="text-sm font-medium">People</h2>
@@ -130,16 +118,7 @@ export function MembersManager() {
   );
 }
 
-function InviteMemberForm({
-  atSeatLimit,
-  planName,
-  isFreePlan,
-}: {
-  atSeatLimit: boolean;
-  planName: string;
-  isFreePlan: boolean;
-}) {
-  const params = useParams<{ orgSlug: string }>();
+function InviteMemberForm() {
   const inviteMember = useMutation(api.organizations.inviteMember);
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<MemberRole>("member");
@@ -168,22 +147,6 @@ function InviteMemberForm({
       setSubmitting(false);
     }
   };
-
-  if (atSeatLimit) {
-    return (
-      <div className="flex items-center justify-between gap-3 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3">
-        <p className="text-xs text-amber-600 dark:text-amber-400">
-          All {planName} plan seats are in use.{" "}
-          {isFreePlan
-            ? "Upgrade to Pro for up to 10 seats, or Enterprise for unlimited members."
-            : "Upgrade to Enterprise for unlimited members."}
-        </p>
-        <Button size="sm" asChild>
-          <Link href={`/${params.orgSlug}/settings/billing`}>Upgrade</Link>
-        </Button>
-      </div>
-    );
-  }
 
   return (
     <form

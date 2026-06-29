@@ -25,8 +25,23 @@ export const issuePriorityValidator = v.union(
 
 export const planValidator = v.union(
   v.literal("free"),
-  v.literal("pro"),
-  v.literal("enterprise")
+  v.literal("business")
+);
+
+export const aiModeValidator = v.union(
+  v.literal("managed"),
+  v.literal("byok")
+);
+
+export const aiProviderValidator = v.union(
+  v.literal("openai"),
+  v.literal("anthropic"),
+  v.literal("openrouter")
+);
+
+export const embeddingProviderValidator = v.union(
+  v.literal("openai"),
+  v.literal("openrouter")
 );
 
 export const memberRoleValidator = v.union(
@@ -99,7 +114,32 @@ export default defineSchema({
     imageUrl: v.optional(v.string()),
     plan: planValidator,
     subscriptionStatus: v.optional(v.string()),
+    storageBytesUsed: v.optional(v.number()),
+    aiMode: v.optional(aiModeValidator),
+    aiCreditBalance: v.optional(v.number()),
+    stripeCustomerId: v.optional(v.string()),
+    stripeSubscriptionId: v.optional(v.string()),
   }).index("by_slug", ["slug"]),
+
+  orgAiCredentials: defineTable({
+    orgId: v.id("organizations"),
+    provider: aiProviderValidator,
+    encryptedApiKey: v.string(),
+    chatModelId: v.optional(v.string()),
+    embeddingProvider: v.optional(embeddingProviderValidator),
+    embeddingModelId: v.optional(v.string()),
+    lastValidatedAt: v.optional(v.number()),
+  }).index("by_org", ["orgId"]),
+
+  aiCreditGrants: defineTable({
+    orgId: v.id("organizations"),
+    stripeSessionId: v.string(),
+    credits: v.number(),
+    packId: v.optional(v.string()),
+    grantedAt: v.number(),
+  })
+    .index("by_session", ["stripeSessionId"])
+    .index("by_org", ["orgId"]),
 
   members: defineTable({
     orgId: v.id("organizations"),
@@ -257,12 +297,15 @@ export default defineSchema({
   attachments: defineTable({
     orgId: v.id("organizations"),
     issueId: v.id("issues"),
-    storageId: v.id("_storage"),
+    storageId: v.optional(v.id("_storage")),
+    r2Key: v.optional(v.string()),
     fileName: v.string(),
     fileType: v.string(),
     fileSize: v.number(),
     uploadedBy: v.id("users"),
-  }).index("by_issue", ["issueId"]),
+  })
+    .index("by_issue", ["issueId"])
+    .index("by_org", ["orgId"]),
 
   views: defineTable({
     orgId: v.id("organizations"),

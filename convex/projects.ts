@@ -4,7 +4,6 @@ import { QueryCtx } from "./_generated/server";
 import { issueShape } from "./issues";
 import { logActivity } from "./lib/activity";
 import { orgMutation, orgQuery } from "./lib/customFunctions";
-import { assertCanCreateProject } from "./lib/limits";
 import { projectStatusValidator } from "./schema";
 
 export const projectShape = {
@@ -163,7 +162,6 @@ export const create = orgMutation({
     if (!name) {
       throw new Error("Project name is required");
     }
-    await assertCanCreateProject(ctx, ctx.org);
 
     if (args.leadId) {
       const membership = await ctx.db
