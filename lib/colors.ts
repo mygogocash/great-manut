@@ -19,8 +19,15 @@ export function readableForeground(background: string): "#ffffff" | "#000000" {
 }
 
 function parseHex(hex: string): [number, number, number] | null {
-  const match = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
+  const match = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(hex.trim());
   if (!match) return null;
-  const int = Number.parseInt(match[1], 16);
+  const hexValue =
+    match[1].length === 3
+      ? match[1]
+          .split("")
+          .map((c) => c + c)
+          .join("")
+      : match[1];
+  const int = Number.parseInt(hexValue, 16);
   return [(int >> 16) & 255, (int >> 8) & 255, int & 255];
 }

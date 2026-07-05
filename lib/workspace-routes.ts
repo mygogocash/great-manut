@@ -12,8 +12,6 @@ export type WorkspaceRoute =
   | { kind: "docs-page"; pageId: string }
   | { kind: "team"; teamId: string }
   | { kind: "team-board"; teamId: string }
-  | { kind: "service" }
-  | { kind: "service-request"; requestId: string }
   | { kind: "unknown" };
 
 /** Map optional catch-all segments to a workspace view (sidebar routes only). */
@@ -44,14 +42,6 @@ export function parseWorkspaceRoute(
   if (first === "service" && section.length === 1) {
     return { kind: "service" };
   }
-  if (
-    first === "service" &&
-    second === "request" &&
-    third &&
-    section.length === 3
-  ) {
-    return { kind: "service-request", requestId: third };
-  }
   if (first === "docs" && section.length === 1) {
     return { kind: "docs" };
   }
@@ -66,9 +56,6 @@ export function parseWorkspaceRoute(
   }
   if (first === "team" && second && third === "board" && section.length === 3) {
     return { kind: "team-board", teamId: second };
-  }
-  if (first === "service" && section.length === 1) {
-    return { kind: "service" };
   }
   if (first === "service" && second && section.length === 2) {
     return { kind: "service-request", requestId: second };

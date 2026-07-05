@@ -321,8 +321,7 @@ export const convertToIssue = orgMutation({
       throw new Error("Team not found");
     }
 
-    const org = await ctx.db.get(ctx.org._id);
-    const portalUrl = `/portal/${org?.slug ?? ""}`;
+    const portalUrl = `/portal/${ctx.org.slug}`;
     const number = team.nextIssueNumber;
     await ctx.db.patch(team._id, { nextIssueNumber: number + 1 });
 
