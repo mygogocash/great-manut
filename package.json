@@ -20,7 +20,7 @@
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
   },
   "dependencies": {
-    "@ai-sdk/openai": "^3.0.77",
+    "@ai-sdk/openai": "^3.0.80",
     "@auth/core": "0.41.2",
     "@convex-dev/agent": "^0.6.4",
     "@convex-dev/auth": "^0.0.94",
