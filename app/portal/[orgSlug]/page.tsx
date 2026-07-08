@@ -23,19 +23,6 @@ import {
 } from "@/components/service-desk/service-desk-meta";
 import { CONTENT_PX } from "@/lib/responsive";
 
-function getRateLimitKey(): string {
-  if (typeof window === "undefined") {
-    return "ssr";
-  }
-  const storageKey = "manut_portal_rl";
-  let key = sessionStorage.getItem(storageKey);
-  if (!key) {
-    key = crypto.randomUUID();
-    sessionStorage.setItem(storageKey, key);
-  }
-  return key;
-}
-
 function SubmitForm({
   orgSlug,
   requestTypes,
@@ -72,7 +59,6 @@ function SubmitForm({
         description,
         requesterEmail,
         requesterName: requesterName.trim() || undefined,
-        rateLimitKey: getRateLimitKey(),
       });
       setSuccess({ displayNumber: result.displayNumber });
       setTitle("");

@@ -41,6 +41,38 @@ export async function getOrgIssue(
   return issue;
 }
 
+async function assertOrgProject(
+  ctx: { db: QueryCtx["db"] },
+  orgId: Id<"organizations">,
+  projectId: Id<"projects"> | undefined
+): Promise<void> {
+  if (!projectId) {
+    return;
+  }
+  const project = await ctx.db.get(projectId);
+  if (!project || project.orgId !== orgId) {
+    throw new Error("Project not found");
+  }
+}
+
+async function assertOrgCycleForTeam(
+  ctx: { db: QueryCtx["db"] },
+  orgId: Id<"organizations">,
+  teamId: Id<"teams">,
+  cycleId: Id<"cycles"> | undefined
+): Promise<void> {
+  if (!cycleId) {
+    return;
+  }
+  const cycle = await ctx.db.get(cycleId);
+  if (!cycle || cycle.orgId !== orgId) {
+    throw new Error("Cycle not found");
+  }
+  if (cycle.teamId !== teamId) {
+    throw new Error("Cycle must belong to the issue's team");
+  }
+}
+
 export const listByTeam = orgQuery({
   args: { teamId: v.id("teams") },
   returns: v.array(v.object(issueShape)),
@@ -119,6 +151,9 @@ export const create = orgMutation({
       .order("desc")
       .first();
     const sortOrder = (newest?.sortOrder ?? 0) + 1000;
+
+    await assertOrgProject(ctx, ctx.org._id, args.projectId);
+    await assertOrgCycleForTeam(ctx, ctx.org._id, args.teamId, args.cycleId);
 
     const issueId = await ctx.db.insert("issues", {
       orgId: ctx.org._id,
@@ -210,9 +245,15 @@ export const update = orgMutation({
       });
     }
     if (args.projectId !== undefined) {
+      if (args.projectId) {
+        await assertOrgProject(ctx, ctx.org._id, args.projectId);
+      }
       updates.projectId = args.projectId ?? undefined;
     }
     if (args.cycleId !== undefined) {
+      if (args.cycleId) {
+        await assertOrgCycleForTeam(ctx, ctx.org._id, issue.teamId, args.cycleId);
+      }
       updates.cycleId = args.cycleId ?? undefined;
     }
     if (args.epicId !== undefined) {
