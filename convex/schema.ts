@@ -36,12 +36,14 @@ export const aiModeValidator = v.union(
 export const aiProviderValidator = v.union(
   v.literal("openai"),
   v.literal("anthropic"),
-  v.literal("openrouter")
+  v.literal("openrouter"),
+  v.literal("vertex")
 );
 
 export const embeddingProviderValidator = v.union(
   v.literal("openai"),
-  v.literal("openrouter")
+  v.literal("openrouter"),
+  v.literal("vertex")
 );
 
 export const memberRoleValidator = v.union(

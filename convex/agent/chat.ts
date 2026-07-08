@@ -13,7 +13,6 @@ import { Id } from "../_generated/dataModel";
 import {
   MutationCtx,
   QueryCtx,
-  internalAction,
 } from "../_generated/server";
 import { orgMutation, orgQuery } from "../lib/customFunctions";
 import {
@@ -24,14 +23,6 @@ import {
 import { creditsForEvent } from "../lib/usagePricing";
 import { aiModeValidator } from "../schema";
 import { threadUserKey } from "./limiter";
-import {
-  AI_NOT_CONFIGURED_MESSAGE,
-  isAiConfigured,
-} from "./models";
-import {
-  createVectorAgent,
-  VECTOR_INSTRUCTIONS_TEXT,
-} from "./vectorAgent";
 
 const DEFAULT_THREAD_TITLE = "New conversation";
 
@@ -129,8 +120,9 @@ export const deleteThread = orgMutation({
   returns: v.null(),
   handler: async (ctx, args) => {
     await getOwnedThread(ctx, ctx.org._id, ctx.user._id, args.threadId);
-    const agent = createVectorAgent();
-    await agent.deleteThreadAsync(ctx, { threadId: args.threadId });
+    await ctx.runMutation(components.agent.threads.deleteAllForThreadIdAsync, {
+      threadId: args.threadId,
+    });
     return null;
   },
 });
@@ -207,59 +199,12 @@ export const sendMessage = orgMutation({
       });
     }
 
-    await ctx.scheduler.runAfter(0, internal.agent.chat.streamResponse, {
+    await ctx.scheduler.runAfter(0, internal.agent.chatStream.streamResponse, {
       threadId: args.threadId,
       promptMessageId: messageId,
       orgId: ctx.org._id,
       userId: ctx.user._id,
     });
-    return null;
-  },
-});
-
-export const streamResponse = internalAction({
-  args: {
-    threadId: v.string(),
-    promptMessageId: v.string(),
-    orgId: v.id("organizations"),
-    userId: v.id("users"),
-  },
-  returns: v.null(),
-  handler: async (ctx, args): Promise<null> => {
-    const actor = await ctx.runQuery(internal.agent.data.actorContext, {
-      orgId: args.orgId,
-      userId: args.userId,
-    });
-    try {
-      const resolved = await ctx.runAction(
-        internal.agent.resolveProvider.resolveOrgAiProvider,
-        { orgId: args.orgId }
-      );
-      const agent = createVectorAgent(resolved.chatModel);
-      await agent.streamText(
-        { ...ctx, orgId: args.orgId, requestUserId: args.userId },
-        {
-          threadId: args.threadId,
-          userId: threadUserKey(args.orgId, args.userId),
-        },
-        {
-          promptMessageId: args.promptMessageId,
-          system: `${VECTOR_INSTRUCTIONS_TEXT}\n\nWorkspace: ${actor.orgName}. Requesting user: ${actor.userName}. Today's date: ${new Date().toISOString().slice(0, 10)}.`,
-        },
-        { saveStreamDeltas: true }
-      );
-    } catch (error) {
-      console.error("AI response generation failed", error);
-      const reason = isAiConfigured()
-        ? "Something went wrong while generating a response. Please try again."
-        : AI_NOT_CONFIGURED_MESSAGE;
-      await saveMessage(ctx, components.agent, {
-        threadId: args.threadId,
-        userId: threadUserKey(args.orgId, args.userId),
-        agentName: "Manut",
-        message: { role: "assistant", content: reason },
-      });
-    }
     return null;
   },
 });

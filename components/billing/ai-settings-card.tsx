@@ -15,7 +15,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { AI_CREDIT_PACKS } from "@/lib/usage-pricing";
+import { AI_CREDIT_PACKS, type AiProvider } from "@/lib/usage-pricing";
+import { Textarea } from "@/components/ui/textarea";
 
 export function AiSettingsCard() {
   const settings = useQuery(api.aiCredentials.getSettings);
@@ -25,13 +26,16 @@ export function AiSettingsCard() {
   const saveCredential = useMutation(api.aiCredentials.saveCredential);
   const removeCredential = useMutation(api.aiCredentials.removeCredential);
   const createPackCheckout = useMutation(api.billing.stripe.createAiPackCheckout);
-
-  const [provider, setProvider] = useState<"openai" | "anthropic" | "openrouter">(
-    "openai"
+  const embeddingStats = useQuery(api.agent.embeddings.embeddingStats);
+  const requestEmbeddingRebackfill = useMutation(
+    api.agent.embeddings.requestEmbeddingRebackfill
   );
+
+  const [provider, setProvider] = useState<AiProvider>("vertex");
   const [apiKey, setApiKey] = useState("");
   const [chatModelId, setChatModelId] = useState("");
   const [saving, setSaving] = useState(false);
+  const [rebackfilling, setRebackfilling] = useState(false);
 
   const isAdmin = membership?.role === "admin";
 
@@ -70,8 +74,8 @@ export function AiSettingsCard() {
         <div>
           <h2 className="text-sm font-medium">AI mode</h2>
           <p className="text-xs text-muted-foreground">
-            Managed top-up uses Manut inference. BYOK bills your provider
-            directly.
+            Managed top-up uses Manut inference on Google Vertex. BYOK bills
+            your provider directly.
           </p>
         </div>
         <div className="rounded-lg border bg-card p-4">
@@ -147,7 +151,7 @@ export function AiSettingsCard() {
 
       <section className="flex flex-col gap-3">
         <div>
-          <h2 className="text-sm font-medium">Provider API key (BYOK)</h2>
+          <h2 className="text-sm font-medium">Provider credentials (BYOK)</h2>
           <p className="text-xs text-muted-foreground">
             Keys are encrypted server-side and never shown again after save.
           </p>
@@ -166,15 +170,14 @@ export function AiSettingsCard() {
             <Label className="text-xs">Provider</Label>
             <Select
               value={provider}
-              onValueChange={(v) =>
-                setProvider(v as "openai" | "anthropic" | "openrouter")
-              }
+              onValueChange={(v) => setProvider(v as AiProvider)}
               disabled={!isAdmin}
             >
               <SelectTrigger className="h-8">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="vertex">Google Vertex</SelectItem>
                 <SelectItem value="openai">OpenAI</SelectItem>
                 <SelectItem value="anthropic">Claude (Anthropic)</SelectItem>
                 <SelectItem value="openrouter">OpenRouter</SelectItem>
@@ -183,26 +186,42 @@ export function AiSettingsCard() {
           </div>
 
           <div className="grid gap-2">
-            <Label className="text-xs">API key</Label>
-            <Input
-              type="password"
-              className="h-8"
-              placeholder="sk-…"
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              disabled={!isAdmin}
-            />
+            <Label className="text-xs">
+              {provider === "vertex" ? "Service account JSON" : "API key"}
+            </Label>
+            {provider === "vertex" ? (
+              <Textarea
+                className="min-h-24 font-mono text-xs"
+                placeholder='{"type":"service_account","project_id":"…",…}'
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+                disabled={!isAdmin}
+              />
+            ) : (
+              <Input
+                type="password"
+                className="h-8"
+                placeholder="sk-…"
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+                disabled={!isAdmin}
+              />
+            )}
           </div>
 
-          {(provider === "openrouter" || provider === "anthropic") && (
+          {(provider === "openrouter" ||
+            provider === "anthropic" ||
+            provider === "vertex") && (
             <div className="grid gap-2">
-              <Label className="text-xs">Chat model id</Label>
+              <Label className="text-xs">Chat model id (optional)</Label>
               <Input
                 className="h-8"
                 placeholder={
                   provider === "openrouter"
                     ? "openai/gpt-4o-mini"
-                    : "claude-3-5-haiku-latest"
+                    : provider === "anthropic"
+                      ? "claude-3-5-haiku-latest"
+                      : "gemini-2.5-flash"
                 }
                 value={chatModelId}
                 onChange={(e) => setChatModelId(e.target.value)}
@@ -221,7 +240,8 @@ export function AiSettingsCard() {
                   provider,
                   apiKey,
                   chatModelId: chatModelId.trim() || undefined,
-                  embeddingProvider: "openai",
+                  embeddingProvider:
+                    provider === "vertex" ? "vertex" : "openai",
                 })
                   .then(() => {
                     toast.success("API key saved and validated");
@@ -251,6 +271,49 @@ export function AiSettingsCard() {
               </Button>
             )}
           </div>
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <div>
+          <h2 className="text-sm font-medium">Issue embeddings</h2>
+          <p className="text-xs text-muted-foreground">
+            Semantic duplicate detection uses Vertex embeddings. Re-run after
+            switching providers or models.
+          </p>
+        </div>
+        <div className="rounded-lg border bg-card p-4">
+          {embeddingStats === undefined ? (
+            <Loader2 className="size-4 animate-spin text-muted-foreground" />
+          ) : (
+            <p className="text-xs text-muted-foreground">
+              {embeddingStats.embedded} / {embeddingStats.total} issues embedded
+              {embeddingStats.missing > 0
+                ? ` · ${embeddingStats.missing} missing`
+                : ""}
+            </p>
+          )}
+          <Button
+            size="sm"
+            className="mt-3"
+            variant="outline"
+            disabled={!isAdmin || rebackfilling}
+            onClick={() => {
+              setRebackfilling(true);
+              void requestEmbeddingRebackfill({})
+                .then(() =>
+                  toast.success(
+                    "Re-embed started — runs in the background in batches"
+                  )
+                )
+                .catch((e: unknown) =>
+                  toast.error(e instanceof Error ? e.message : "Failed")
+                )
+                .finally(() => setRebackfilling(false));
+            }}
+          >
+            {rebackfilling ? "Starting…" : "Re-embed all issues"}
+          </Button>
         </div>
       </section>
     </div>
