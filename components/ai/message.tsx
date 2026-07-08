@@ -44,7 +44,7 @@ function ToolChip({
       ) : failed ? (
         <CircleAlert className="size-3 text-destructive" />
       ) : (
-        <CircleCheck className="size-3 text-emerald-500" />
+        <CircleCheck className="size-3 text-success" />
       )}
       <Wrench className="size-3" />
       {TOOL_LABELS[name] ?? name}
@@ -61,7 +61,10 @@ function AssistantText({
 }) {
   const [visibleText] = useSmoothText(text, { startStreaming: streaming });
   return (
-    <Streamdown className="text-sm leading-relaxed [&_a]:underline [&_code]:text-xs">
+    <Streamdown
+      shikiTheme={["github-light", "github-dark"]}
+      className="text-sm leading-relaxed [&_a]:underline [&_code]:text-xs"
+    >
       {visibleText}
     </Streamdown>
   );

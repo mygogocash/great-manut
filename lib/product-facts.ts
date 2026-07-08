@@ -111,7 +111,7 @@ export const FAQ_ITEMS: FaqItem[] = [
   {
     question: "Does Manut have an AI agent?",
     answer:
-      "Yes — every workspace can use the AI agent via prepaid credit packs or BYOK (OpenAI, Claude, OpenRouter). The agent works inside your workspace with org-scoped tools: it creates and updates issues, summarizes cycles, drafts standups, and flags duplicate work.",
+      "Yes — every workspace can use the AI agent via prepaid credit packs or BYOK (Google Vertex, OpenAI, Claude, OpenRouter). The agent works inside your workspace with org-scoped tools: it creates and updates issues, summarizes cycles, drafts standups, and flags duplicate work.",
   },
   {
     question: "What are Manut cycles?",

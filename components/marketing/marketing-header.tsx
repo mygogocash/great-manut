@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { MarketingNavAuth } from "@/components/auth/marketing-nav-auth";
 import { BrandMark } from "@/components/shared/brand-mark";
+import { ThemeToggle } from "@/components/shell/theme-toggle";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -26,6 +27,7 @@ export function MarketingHeader() {
           <Button variant="ghost" size="sm" asChild>
             <Link href="/pricing">Pricing</Link>
           </Button>
+          <ThemeToggle />
           <MarketingNavAuth />
         </nav>
 
@@ -53,6 +55,10 @@ export function MarketingHeader() {
               >
                 <Link href="/pricing">Pricing</Link>
               </Button>
+              <div className="mt-2 flex items-center justify-between border-t pt-4">
+                <span className="text-sm text-muted-foreground">Theme</span>
+                <ThemeToggle />
+              </div>
               <div className="mt-2 border-t pt-4">
                 <MarketingNavAuth layout="stacked" />
               </div>

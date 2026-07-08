@@ -61,8 +61,8 @@ bootstrap_env
 require_auth
 assert_deployment_access
 
-echo "Deploying Convex functions to sincere-oriole-287…"
-CONVEX_DEPLOYMENT="${CONVEX_DEPLOYMENT:-$DEPLOYMENT}" npx convex deploy --yes
+echo "Pushing Convex functions to sincere-oriole-287 (dev)…"
+CONVEX_DEPLOYMENT="${CONVEX_DEPLOYMENT:-$DEPLOYMENT}" npx convex dev --once
 
 echo "Done. Verify auth is deployed (signIn is an Action, not missing):"
 echo "  curl -s -X POST https://sincere-oriole-287.convex.cloud/api/action \\"

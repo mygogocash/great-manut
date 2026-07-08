@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { MarketingHeader } from "@/components/marketing/marketing-header";
+import { SurfaceThemeProvider } from "@/components/theme/surface-theme-provider";
 import {
   marketingOpenGraphDefaults,
   marketingTwitterDefaults,
@@ -25,9 +26,11 @@ export default function MarketingLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-dvh flex-col">
-      <MarketingHeader />
-      <div className="flex-1">{children}</div>
-    </div>
+    <SurfaceThemeProvider surface="marketing">
+      <div className="flex min-h-dvh flex-col">
+        <MarketingHeader />
+        <div className="flex-1">{children}</div>
+      </div>
+    </SurfaceThemeProvider>
   );
 }

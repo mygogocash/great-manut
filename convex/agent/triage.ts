@@ -10,9 +10,9 @@ import { issueSummaryValidator } from "./data";
 import { embedText } from "./embeddingsActions";
 import {
   AI_NOT_CONFIGURED_MESSAGE,
-  chatModel,
   isAiConfigured,
-} from "./models";
+} from "./modelConfig";
+import { getPlatformChatModel } from "./vertexClient";
 
 /**
  * Triage assist for the issue detail page (Track D).
@@ -143,7 +143,7 @@ export const suggestTriage = action({
     const labelNames = issue.orgLabels.map((label) => label.name);
     try {
       const { output } = await generateText({
-        model: chatModel,
+        model: getPlatformChatModel(),
         output: Output.object({
           schema: jsonSchema<{
             priority: SuggestedPriority;

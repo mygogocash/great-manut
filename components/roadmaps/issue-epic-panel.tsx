@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { IssueDetailSlotProps } from "@/components/issue-detail/slots";
+import { DEFAULT_PROJECT_COLOR } from "@/components/projects/project-meta";
 
 const NONE = "none";
 
@@ -61,7 +62,7 @@ export function IssueEpicPanel({ issue }: IssueDetailSlotProps) {
               <span className="flex items-center gap-2">
                 <span
                   className="size-2.5 shrink-0 rounded-full"
-                  style={{ backgroundColor: epic.color ?? "#5e6ad2" }}
+                  style={{ backgroundColor: epic.color ?? DEFAULT_PROJECT_COLOR }}
                 />
                 {epic.title}
               </span>

@@ -11,6 +11,7 @@ import { Doc, Id } from "@/convex/_generated/dataModel";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { DAY_MS } from "@/components/projects/dates";
 import { DEFAULT_PROJECT_COLOR } from "@/components/projects/project-meta";
+import { readableForeground } from "@/lib/colors";
 import { cn } from "@/lib/utils";
 
 const MONTH_MS = DAY_MS * 30;
@@ -54,6 +55,8 @@ function EpicBar({
   const [previewEnd, setPreviewEnd] = useState<number | null>(null);
 
   const displayEnd = previewEnd ?? end;
+  const barColor = epic.color ?? DEFAULT_PROJECT_COLOR;
+  const labelColor = readableForeground(barColor);
 
   const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
     event.preventDefault();
@@ -94,17 +97,26 @@ function EpicBar({
         style={{
           left: `${left}%`,
           width: `${Math.max(((displayEnd - start) / rangeMs) * 100, 2)}%`,
-          backgroundColor: epic.color ?? "#5e6ad2",
+          backgroundColor: barColor,
         }}
       >
-        <span className="absolute inset-y-0 left-2 flex items-center truncate pr-6 text-[10px] font-medium text-white">
+        <span
+          className="absolute inset-y-0 left-2 flex items-center truncate pr-6 text-[10px] font-medium"
+          style={{ color: labelColor }}
+        >
           {epic.title}
         </span>
         <div
           role="separator"
           aria-orientation="horizontal"
           aria-label={`Drag to change end date for ${epic.title}`}
-          className="absolute top-0 right-0 h-full w-2 cursor-ew-resize rounded-r-md bg-black/20"
+          className="absolute top-0 right-0 h-full w-2 cursor-ew-resize rounded-r-md"
+          style={{
+            backgroundColor:
+              labelColor === "#ffffff"
+                ? "rgba(255,255,255,0.3)"
+                : "rgba(0,0,0,0.2)",
+          }}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
@@ -221,13 +233,13 @@ export function TimelineView({ project }: { project: Doc<"projects"> }) {
             {project.targetDate && (
               <div className="relative mb-4 h-6">
                 <div
-                  className="absolute top-0 h-full w-px bg-amber-500"
+                  className="absolute top-0 h-full w-px bg-warning"
                   style={{
                     left: `${((project.targetDate - rangeStart) / rangeMs) * 100}%`,
                   }}
                 />
                 <span
-                  className="absolute -top-0.5 text-[10px] text-amber-500"
+                  className="absolute -top-0.5 text-[10px] text-warning"
                   style={{
                     left: `${((project.targetDate - rangeStart) / rangeMs) * 100}%`,
                     transform: "translateX(-50%)",
@@ -289,7 +301,7 @@ export function TimelineView({ project }: { project: Doc<"projects"> }) {
                 >
                   <span
                     className="size-2 shrink-0 rounded-full"
-                    style={{ backgroundColor: epic.color ?? "#5e6ad2" }}
+                    style={{ backgroundColor: epic.color ?? DEFAULT_PROJECT_COLOR }}
                   />
                   <span className="truncate">{epic.title}</span>
                 </button>

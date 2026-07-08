@@ -3,6 +3,7 @@
 import { useMutation, useQuery } from "convex/react";
 import { Loader2, Send, Trash2 } from "lucide-react";
 import { useRef, useState } from "react";
+import { toast } from "sonner";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
@@ -41,6 +42,10 @@ export function PageComments({
       });
       setBody("");
       mentionsRef.current = new Map();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to add comment"
+      );
     } finally {
       setSubmitting(false);
     }
@@ -75,7 +80,16 @@ export function PageComments({
                     variant="ghost"
                     size="icon"
                     className="size-5 ml-auto"
-                    onClick={() => removeComment({ commentId: comment._id })}
+                    onClick={() => {
+                      removeComment({ commentId: comment._id }).catch(
+                        (error: unknown) =>
+                          toast.error(
+                            error instanceof Error
+                              ? error.message
+                              : "Failed to delete comment"
+                          )
+                      );
+                    }}
                     aria-label="Delete comment"
                   >
                     <Trash2 className="size-3" />

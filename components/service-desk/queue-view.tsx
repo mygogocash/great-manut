@@ -22,9 +22,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatDayWithYear } from "@/components/projects/dates";
 import { cn } from "@/lib/utils";
 import {
+  serviceRequestStatusClass,
   serviceRequestStatusLabel,
   type ServiceQueueFilter,
-  type ServiceRequestStatus,
 } from "./service-desk-meta";
 
 const QUEUE_TABS: { value: ServiceQueueFilter; label: string }[] = [
@@ -32,25 +32,6 @@ const QUEUE_TABS: { value: ServiceQueueFilter; label: string }[] = [
   { value: "mine", label: "Mine" },
   { value: "all_open", label: "All open" },
 ];
-
-function statusBadgeClass(status: ServiceRequestStatus): string {
-  switch (status) {
-    case "new":
-      return "bg-blue-500/15 text-blue-400";
-    case "waiting":
-      return "bg-amber-500/15 text-amber-400";
-    case "in_progress":
-      return "bg-violet-500/15 text-violet-400";
-    case "resolved":
-      return "bg-emerald-500/15 text-emerald-400";
-    case "closed":
-      return "bg-muted text-muted-foreground";
-    default: {
-      const _exhaustive: never = status;
-      return _exhaustive;
-    }
-  }
-}
 
 function QueueTable({
   queue,
@@ -95,7 +76,7 @@ function QueueTable({
                   variant="secondary"
                   className={cn(
                     "shrink-0 text-[10px] font-normal",
-                    statusBadgeClass(request.status)
+                    serviceRequestStatusClass(request.status)
                   )}
                 >
                   {serviceRequestStatusLabel(request.status)}
@@ -152,7 +133,7 @@ function QueueTable({
               <TableCell>
                 <Badge
                   variant="secondary"
-                  className={cn("text-[10px] font-normal", statusBadgeClass(request.status))}
+                  className={cn("text-[10px] font-normal", serviceRequestStatusClass(request.status))}
                 >
                   {serviceRequestStatusLabel(request.status)}
                 </Badge>

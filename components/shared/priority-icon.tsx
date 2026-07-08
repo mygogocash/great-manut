@@ -13,7 +13,7 @@ const config: Record<
   { icon: typeof Minus; className: string }
 > = {
   none: { icon: Minus, className: "text-muted-foreground/50" },
-  urgent: { icon: TriangleAlert, className: "text-orange-500" },
+  urgent: { icon: TriangleAlert, className: "text-orange-600 dark:text-orange-400" },
   high: { icon: SignalHigh, className: "text-foreground" },
   medium: { icon: SignalMedium, className: "text-foreground" },
   low: { icon: SignalLow, className: "text-foreground" },

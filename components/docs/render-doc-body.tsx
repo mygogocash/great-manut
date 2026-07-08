@@ -82,7 +82,10 @@ export function RenderDocBody({
   const hasIssueKeys = segments.some((s) => s.type === "issueKey");
   if (!hasIssueKeys) {
     return (
-      <Streamdown className={className ?? "prose prose-sm dark:prose-invert max-w-none"}>
+      <Streamdown
+        shikiTheme={["github-light", "github-dark"]}
+        className={className ?? "prose prose-sm dark:prose-invert max-w-none"}
+      >
         {body}
       </Streamdown>
     );
@@ -96,7 +99,11 @@ export function RenderDocBody({
             return null;
           }
           return (
-            <Streamdown key={index} className="inline [&_p]:inline [&_p]:m-0">
+            <Streamdown
+              key={index}
+              shikiTheme={["github-light", "github-dark"]}
+              className="inline [&_p]:inline [&_p]:m-0"
+            >
               {segment.value}
             </Streamdown>
           );

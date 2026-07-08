@@ -77,7 +77,7 @@ export function Footer() {
             © {new Date().getFullYear()} Manut. All systems operational.
           </p>
           <p className="flex items-center gap-1.5 font-mono text-[11px] text-muted-foreground">
-            <span className="size-1.5 rounded-full bg-emerald-500" />
+            <span className="size-1.5 rounded-full bg-success" />
             Realtime sync · 99.99% uptime
           </p>
         </div>

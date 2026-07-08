@@ -10,15 +10,19 @@
 
 import type * as activity from "../activity.js";
 import type * as agent_chat from "../agent/chat.js";
+import type * as agent_chatStream from "../agent/chatStream.js";
 import type * as agent_data from "../agent/data.js";
 import type * as agent_embeddings from "../agent/embeddings.js";
 import type * as agent_embeddingsActions from "../agent/embeddingsActions.js";
+import type * as agent_googleAiClient from "../agent/googleAiClient.js";
 import type * as agent_limiter from "../agent/limiter.js";
+import type * as agent_modelConfig from "../agent/modelConfig.js";
 import type * as agent_models from "../agent/models.js";
 import type * as agent_resolveProvider from "../agent/resolveProvider.js";
 import type * as agent_tools from "../agent/tools.js";
 import type * as agent_triage from "../agent/triage.js";
 import type * as agent_vectorAgent from "../agent/vectorAgent.js";
+import type * as agent_vertexClient from "../agent/vertexClient.js";
 import type * as aiCredentials from "../aiCredentials.js";
 import type * as aiCredits from "../aiCredits.js";
 import type * as attachments from "../attachments.js";
@@ -68,15 +72,19 @@ import type {
 declare const fullApi: ApiFromModules<{
   activity: typeof activity;
   "agent/chat": typeof agent_chat;
+  "agent/chatStream": typeof agent_chatStream;
   "agent/data": typeof agent_data;
   "agent/embeddings": typeof agent_embeddings;
   "agent/embeddingsActions": typeof agent_embeddingsActions;
+  "agent/googleAiClient": typeof agent_googleAiClient;
   "agent/limiter": typeof agent_limiter;
+  "agent/modelConfig": typeof agent_modelConfig;
   "agent/models": typeof agent_models;
   "agent/resolveProvider": typeof agent_resolveProvider;
   "agent/tools": typeof agent_tools;
   "agent/triage": typeof agent_triage;
   "agent/vectorAgent": typeof agent_vectorAgent;
+  "agent/vertexClient": typeof agent_vertexClient;
   aiCredentials: typeof aiCredentials;
   aiCredits: typeof aiCredits;
   attachments: typeof attachments;

@@ -7,9 +7,9 @@ export type OrgPlanId = "free" | "business";
 
 export type AiMode = "managed" | "byok";
 
-export type AiProvider = "openai" | "anthropic" | "openrouter";
+export type AiProvider = "openai" | "anthropic" | "openrouter" | "vertex";
 
-export type EmbeddingProvider = "openai" | "openrouter";
+export type EmbeddingProvider = "openai" | "openrouter" | "vertex";
 
 /** Bytes included per plan before overage billing (Business only). */
 export const STORAGE_INCLUDED_BYTES: Record<OrgPlanId, number> = {
