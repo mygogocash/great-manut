@@ -34,6 +34,8 @@ export const AI_CREDIT_WEIGHTS = {
   chatMessage: 1,
   issueEmbedding: 0.1,
   semanticSearch: 0.2,
+  triageSuggestion: 0.5,
+  duplicateDetection: 0.2,
 } as const;
 
 export type AiCreditPackId = "starter" | "standard" | "pro";

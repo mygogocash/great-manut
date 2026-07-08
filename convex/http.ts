@@ -2,6 +2,7 @@ import { httpRouter } from "convex/server";
 import { internal } from "./_generated/api";
 import { httpAction } from "./_generated/server";
 import { auth } from "./auth";
+import { verifyStripeWebhookSignature } from "./billing/verifyStripeWebhook";
 
 const http = httpRouter();
 
@@ -23,15 +24,14 @@ http.route({
 
     const body = await request.text();
 
-    // Stripe signature verification via API (avoids stripe npm dependency).
-    const verified = await fetch(
-      "https://api.stripe.com/v1/webhook_endpoints/verify",
-      { method: "POST" }
-    ).catch(() => null);
-
-    // Minimal parse: production should verify signature with stripe SDK.
-    // When STRIPE_WEBHOOK_SECRET is set, trust parsed JSON for MVP stub path.
-    void verified;
+    const signatureValid = await verifyStripeWebhookSignature({
+      payload: body,
+      signatureHeader: signature,
+      secret: webhookSecret,
+    });
+    if (!signatureValid) {
+      return new Response("Invalid signature", { status: 400 });
+    }
 
     let event: {
       type: string;

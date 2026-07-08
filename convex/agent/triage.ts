@@ -68,6 +68,20 @@ export const findDuplicates = action({
       return { ok: false as const, error: AI_NOT_CONFIGURED_MESSAGE };
     }
     try {
+      await ctx.runMutation(internal.aiCredits.assertAndDeductCredits, {
+        orgId: auth.orgId,
+        event: "duplicateDetection",
+      });
+    } catch (error) {
+      return {
+        ok: false as const,
+        error:
+          error instanceof Error
+            ? error.message
+            : "Insufficient AI credits for duplicate detection.",
+      };
+    }
+    try {
       const text = issue.description
         ? `${issue.title}\n\n${issue.description}`
         : issue.title;
@@ -138,6 +152,25 @@ export const suggestTriage = action({
     });
     if (!isAiConfigured()) {
       return { ok: false as const, error: AI_NOT_CONFIGURED_MESSAGE };
+    }
+
+    if (!isAiConfigured()) {
+      return { ok: false as const, error: AI_NOT_CONFIGURED_MESSAGE };
+    }
+
+    try {
+      await ctx.runMutation(internal.aiCredits.assertAndDeductCredits, {
+        orgId: auth.orgId,
+        event: "triageSuggestion",
+      });
+    } catch (error) {
+      return {
+        ok: false as const,
+        error:
+          error instanceof Error
+            ? error.message
+            : "Insufficient AI credits for triage suggestions.",
+      };
     }
 
     const labelNames = issue.orgLabels.map((label) => label.name);

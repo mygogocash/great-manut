@@ -11,6 +11,18 @@ import { serviceRequestStatusValidator } from "./schema";
 
 const OPEN_STATUSES = new Set(["new", "waiting", "in_progress"]);
 
+const PORTAL_TITLE_MAX = 200;
+const PORTAL_DESCRIPTION_MAX = 10_000;
+const PORTAL_EMAIL_MAX = 254;
+const PORTAL_NAME_MAX = 100;
+
+function isValidPortalEmail(email: string): boolean {
+  if (email.length === 0 || email.length > PORTAL_EMAIL_MAX) {
+    return false;
+  }
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
 const DEFAULT_REQUEST_TYPES = [
   {
     name: "General support",
@@ -418,7 +430,6 @@ export const portalSubmit = mutation({
     description: v.string(),
     requesterEmail: v.string(),
     requesterName: v.optional(v.string()),
-    rateLimitKey: v.string(),
   },
   returns: v.object({ number: v.number(), displayNumber: v.string() }),
   handler: async (ctx, args) => {
@@ -427,8 +438,31 @@ export const portalSubmit = mutation({
       throw new Error("Portal not available");
     }
 
+    const title = args.title.trim();
+    const description = args.description.trim();
+    const email = args.requesterEmail.trim().toLowerCase();
+    const requesterName = args.requesterName?.trim();
+
+    if (!title || !email) {
+      throw new Error("Title and email are required");
+    }
+    if (title.length > PORTAL_TITLE_MAX) {
+      throw new Error(`Title must be at most ${PORTAL_TITLE_MAX} characters`);
+    }
+    if (description.length > PORTAL_DESCRIPTION_MAX) {
+      throw new Error(
+        `Description must be at most ${PORTAL_DESCRIPTION_MAX} characters`
+      );
+    }
+    if (!isValidPortalEmail(email)) {
+      throw new Error("Invalid email address");
+    }
+    if (requesterName && requesterName.length > PORTAL_NAME_MAX) {
+      throw new Error(`Name must be at most ${PORTAL_NAME_MAX} characters`);
+    }
+
     const status = await portalRateLimiter.limit(ctx, "portalSubmit", {
-      key: `${org._id}:${args.rateLimitKey}`,
+      key: `${org._id}:${email}`,
     });
     if (!status.ok) {
       throw new Error(
@@ -439,12 +473,6 @@ export const portalSubmit = mutation({
     const requestType = await ctx.db.get(args.requestTypeId);
     if (!requestType || requestType.orgId !== org._id) {
       throw new Error("Invalid request type");
-    }
-
-    const title = args.title.trim();
-    const email = args.requesterEmail.trim().toLowerCase();
-    if (!title || !email) {
-      throw new Error("Title and email are required");
     }
 
     const number = await nextRequestNumber(ctx, org._id);
@@ -458,10 +486,10 @@ export const portalSubmit = mutation({
       requestTypeId: args.requestTypeId,
       number,
       title,
-      description: args.description.trim(),
+      description,
       status: "new",
       requesterEmail: email,
-      requesterName: args.requesterName?.trim() || undefined,
+      requesterName: requesterName || undefined,
       createdAt,
       dueAt,
     });
