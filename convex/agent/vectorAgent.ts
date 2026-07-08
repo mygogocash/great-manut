@@ -1,9 +1,11 @@
+"use node";
+
 import { Agent, stepCountIs } from "@convex-dev/agent";
 import type { LanguageModel } from "ai";
 import { components } from "../_generated/api";
 import { Id } from "../_generated/dataModel";
 import { vectorTools } from "./tools";
-import { chatModel } from "./models";
+import { getPlatformChatModel } from "./vertexClient";
 
 /**
  * Custom fields our authenticated entry points inject into the action ctx so
@@ -30,10 +32,14 @@ Guidelines:
 /** @deprecated Use VECTOR_INSTRUCTIONS_TEXT — kept for existing imports. */
 export const VECTOR_INSTRUCTIONS = VECTOR_INSTRUCTIONS_TEXT;
 
-export function createVectorAgent(languageModel: LanguageModel = chatModel) {
+export function createVectorAgent(
+  languageModel: LanguageModel = getPlatformChatModel()
+) {
   return new Agent<VectorAgentCtx>(components.agent, {
     name: "Manut",
-    languageModel: languageModel as typeof chatModel,
+    // Vertex Gemini model ids are not in the agent's generated union yet.
+    // @ts-expect-error valid LanguageModelV3 from @ai-sdk/google-vertex v4
+    languageModel,
     instructions: VECTOR_INSTRUCTIONS_TEXT,
     tools: vectorTools,
     stopWhen: stepCountIs(12),
@@ -43,5 +49,3 @@ export function createVectorAgent(languageModel: LanguageModel = chatModel) {
     },
   });
 }
-
-export const vectorAgent = createVectorAgent();

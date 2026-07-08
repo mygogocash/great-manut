@@ -553,8 +553,6 @@ export const issuesMissingEmbeddings = internalQuery({
     v.object({ issueId: v.id("issues"), text: v.string() })
   ),
   handler: async (ctx, args) => {
-    // The frozen schema has no "missing embedding" index; this org-scoped
-    // scan stops early thanks to take().
     const missing = await ctx.db
       .query("issues")
       .withIndex("by_org", (q) => q.eq("orgId", args.orgId))
@@ -565,6 +563,67 @@ export const issuesMissingEmbeddings = internalQuery({
       issueId: issue._id,
       text: issueText(issue),
     }));
+  },
+});
+
+/** Paginated issue batch for missing-only or forced re-embedding. */
+export const issuesForEmbeddingBackfill = internalQuery({
+  args: {
+    orgId: v.id("organizations"),
+    limit: v.number(),
+    afterIssueId: v.optional(v.id("issues")),
+    includeEmbedded: v.optional(v.boolean()),
+  },
+  returns: v.array(v.object({ issueId: v.id("issues"), text: v.string() })),
+  handler: async (ctx, args) => {
+    let query = ctx.db
+      .query("issues")
+      .withIndex("by_org", (q) => q.eq("orgId", args.orgId))
+      .order("asc");
+
+    if (args.afterIssueId !== undefined) {
+      const cursor = args.afterIssueId;
+      query = query.filter((q) => q.gt(q.field("_id"), cursor));
+    }
+    if (!args.includeEmbedded) {
+      query = query.filter((q) => q.eq(q.field("embedding"), undefined));
+    }
+
+    const issues = await query.take(args.limit);
+    return issues.map((issue) => ({
+      issueId: issue._id,
+      text: issueText(issue),
+    }));
+  },
+});
+
+export const orgEmbeddingStats = internalQuery({
+  args: { orgId: v.id("organizations") },
+  returns: v.object({
+    total: v.number(),
+    embedded: v.number(),
+    missing: v.number(),
+  }),
+  handler: async (ctx, args) => {
+    const issues = await ctx.db
+      .query("issues")
+      .withIndex("by_org", (q) => q.eq("orgId", args.orgId))
+      .collect();
+    const embedded = issues.filter((issue) => issue.embedding !== undefined).length;
+    return {
+      total: issues.length,
+      embedded,
+      missing: issues.length - embedded,
+    };
+  },
+});
+
+export const listOrgIds = internalQuery({
+  args: { limit: v.optional(v.number()) },
+  returns: v.array(v.id("organizations")),
+  handler: async (ctx, args) => {
+    const orgs = await ctx.db.query("organizations").take(args.limit ?? 1000);
+    return orgs.map((org) => org._id);
   },
 });
 

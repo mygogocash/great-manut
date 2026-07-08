@@ -44,7 +44,7 @@ export const FREE_PLAN: PlanDefinition = {
     "Unlimited members, projects, and issues",
     `${freeStorage} attachment storage`,
     "Docs, Discovery, Service desk, Automations",
-    "AI: top-up packs or BYOK (OpenAI, Claude, OpenRouter)",
+    "AI: top-up packs or BYOK (Google Vertex, OpenAI, Claude, OpenRouter)",
     "50 starter AI credits once",
   ],
 };
@@ -125,7 +125,7 @@ export const COMPARISON_SECTIONS: ComparisonSection[] = [
           `$${AI_CREDIT_PACKS[0].priceUsd}–$${AI_CREDIT_PACKS[2].priceUsd}`,
         ],
       },
-      { label: "BYOK (OpenAI, Claude, OpenRouter)", values: [true, true] },
+      { label: "BYOK (Vertex, OpenAI, Claude, OpenRouter)", values: [true, true] },
       { label: "AI bundled in subscription", values: [false, false] },
     ],
   },

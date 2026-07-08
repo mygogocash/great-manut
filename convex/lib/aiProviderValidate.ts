@@ -1,5 +1,5 @@
 export async function validateProviderKey(
-  provider: "openai" | "anthropic" | "openrouter",
+  provider: "openai" | "anthropic" | "openrouter" | "vertex",
   apiKey: string
 ): Promise<void> {
   switch (provider) {
@@ -12,10 +12,26 @@ export async function validateProviderKey(
     case "anthropic":
       await validateAnthropicKey(apiKey);
       return;
+    case "vertex":
+      validateVertexServiceAccountJson(apiKey);
+      return;
     default: {
       const _never: never = provider;
       throw new Error(`Unknown provider: ${_never}`);
     }
+  }
+}
+
+function validateVertexServiceAccountJson(raw: string): void {
+  const parsed = JSON.parse(raw) as {
+    client_email?: string;
+    private_key?: string;
+    project_id?: string;
+  };
+  if (!parsed.client_email || !parsed.private_key) {
+    throw new Error(
+      "Vertex credentials must be a Google Cloud service account JSON with client_email and private_key."
+    );
   }
 }
 

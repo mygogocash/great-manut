@@ -22,7 +22,7 @@ export const PLAN_LIMIT_COPY: Record<
   ai_credits: {
     title: "AI credits needed",
     description:
-      "Top up prepaid AI credits or connect your provider API key (OpenAI, Claude, OpenRouter) in AI settings.",
+      "Top up prepaid AI credits or connect your provider credentials (Google Vertex, OpenAI, Claude, OpenRouter) in AI settings.",
   },
   issues: {
     title: "Unlimited issues",
