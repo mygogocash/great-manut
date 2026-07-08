@@ -2,8 +2,20 @@ import { v } from "convex/values";
 import { internalMutation } from "./_generated/server";
 import { orgQuery } from "./lib/customFunctions";
 import { getAiCreditBalance, getAiMode } from "./lib/usageLimits";
-import { AI_CREDIT_PACKS, type AiCreditPackId } from "./lib/usagePricing";
+import {
+  AI_CREDIT_PACKS,
+  type AiCreditPackId,
+  creditsForEvent,
+} from "./lib/usagePricing";
 import { aiModeValidator } from "./schema";
+
+const aiCreditEventValidator = v.union(
+  v.literal("chatMessage"),
+  v.literal("issueEmbedding"),
+  v.literal("semanticSearch"),
+  v.literal("triageSuggestion"),
+  v.literal("duplicateDetection")
+);
 
 export const deductCredits = internalMutation({
   args: {
@@ -20,8 +32,42 @@ export const deductCredits = internalMutation({
       return null;
     }
     const balance = getAiCreditBalance(org);
+    if (balance < args.amount) {
+      throw new Error(
+        `AI credit balance is ${balance.toFixed(1)}. Top up credits or switch to BYOK in workspace AI settings.`
+      );
+    }
     await ctx.db.patch(args.orgId, {
-      aiCreditBalance: Math.max(0, balance - args.amount),
+      aiCreditBalance: balance - args.amount,
+    });
+    return null;
+  },
+});
+
+/** Atomically verify balance and deduct for a billable AI event. */
+export const assertAndDeductCredits = internalMutation({
+  args: {
+    orgId: v.id("organizations"),
+    event: aiCreditEventValidator,
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const org = await ctx.db.get(args.orgId);
+    if (!org) {
+      return null;
+    }
+    if (getAiMode(org) === "byok") {
+      return null;
+    }
+    const amount = creditsForEvent(args.event);
+    const balance = getAiCreditBalance(org);
+    if (balance < amount) {
+      throw new Error(
+        `AI credit balance is ${balance.toFixed(1)}. Top up credits or switch to BYOK in workspace AI settings.`
+      );
+    }
+    await ctx.db.patch(args.orgId, {
+      aiCreditBalance: balance - amount,
     });
     return null;
   },
