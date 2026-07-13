@@ -20,7 +20,7 @@
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
   },
   "dependencies": {
-    "@ai-sdk/google": "^3.0.89",
+    "@ai-sdk/google": "^4.0.12",
     "@ai-sdk/google-vertex": "^4.0.157",
     "@ai-sdk/openai": "^3.0.80",
     "@auth/core": "0.41.2",
