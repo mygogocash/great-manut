@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.89",
-    "@ai-sdk/google-vertex": "^4.0.157",
+    "@ai-sdk/google-vertex": "^5.0.22",
     "@ai-sdk/openai": "^3.0.80",
     "@auth/core": "0.41.2",
     "@convex-dev/agent": "^0.6.4",
