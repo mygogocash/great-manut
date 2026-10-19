@@ -23,7 +23,7 @@
     "@ai-sdk/google": "^3.0.89",
     "@ai-sdk/google-vertex": "^4.0.157",
     "@ai-sdk/openai": "^3.0.80",
-    "@auth/core": "0.41.2",
+    "@auth/core": "0.41.3",
     "@convex-dev/agent": "^0.6.4",
     "@convex-dev/auth": "^0.0.94",
     "@convex-dev/presence": "^0.3.1",
